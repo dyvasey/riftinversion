@@ -71,7 +71,7 @@ subsection Solver parameters
   subsection Newton solver parameters
     set Max Newton line search iterations        = 5
     set Max pre-Newton nonlinear iterations      = 100
-    set Maximum linear Stokes solver tolerance   = 1e-1
+    set Maximum linear Stokes solver tolerance   = 1e-5
     set Nonlinear Newton solver switch tolerance = 1e-5
     set SPD safety factor                        = 0.9
     set Stabilization preconditioner             = SPD
@@ -188,7 +188,7 @@ subsection Material model
   set Model name = visco plastic
 
   # No averaging over the entire element
-  set Material averaging = none
+  set Material averaging = project to Q1 only viscosity
 
   subsection Visco Plastic
 
