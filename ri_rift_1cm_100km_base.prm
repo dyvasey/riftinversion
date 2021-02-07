@@ -5,7 +5,7 @@ set End time                                   = 50e6
 set Resume computation                         = auto
 set Use years in output instead of seconds     = true
 set Nonlinear solver scheme                    = single Advection, iterated Newton Stokes
-set Nonlinear solver tolerance                 = 1e-5
+set Nonlinear solver tolerance                 = 1e-4
 set Max nonlinear iterations                   = 100
 set Max nonlinear iterations in pre-refinement = 5
 set CFL number                                 = 0.5
@@ -187,8 +187,8 @@ end
 subsection Material model
   set Model name = visco plastic
 
-  # No averaging over the entire element
-  set Material averaging = project to Q1 only viscosity
+  # Harmonic averaging over the entire element
+  set Material averaging = harmonic average only viscosity
 
   subsection Visco Plastic
 
