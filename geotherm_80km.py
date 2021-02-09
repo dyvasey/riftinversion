@@ -27,11 +27,11 @@ ast = 1573.
 # Define variables for lithosphere layer thickness, heat production, top/basal temperature,
 # and top/basal heat flux.
 k   = array([2.5,2.5,2.5])        # Thermal conductivity
-dz  = array([20.e3,20.e3,60.e3]) # Layer thickness (m)
+dz  = array([20.e3,20.e3,40.e3]) # Layer thickness (m)
 A   = array([1.e-6,2.5e-7,0.,])   # Radiogenic heat production (W/m**3)
 Tt  = array([273.,0.,0.])         # Temperature at top of layer
 Tb  = array([0.,0.,0.])           # Temperature at base of layer
-qt  = array([0.05296,0.,0.])        # Heat flow at top of layer
+qt  = array([0.06021,0.,0.])        # Heat flow at top of layer
 qb  = array([0.,0.,0.])           # Heat flow at base of layer
 
 lith = round(dz.sum()/1000,None) #lithosphere thickness in km
