@@ -21,7 +21,7 @@ def thickness(thickness,directory=".",base=100):
     params = ['ts1','ts2','ts3','ts4','qs1','qs2','qs3']
     
     for file in os.listdir(directory):
-        if file.endswith('base.prm'): # Find the base .prm file
+        if file.endswith('100km_base.prm'): # Find the base .prm file
             filename = os.path.join(directory,file) # Join root to filename
 
     with open(filename) as f_prm: #open the file
