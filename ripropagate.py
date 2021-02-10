@@ -50,8 +50,9 @@ def evelocity(vel,directory=".",base=1):
     """
     vel_str = str(vel)+'cm' # String version of velocity
     vel_str = vel_str.replace('.','-') # Make sure no decimals
-    os.makedirs(vel_str,exist_ok=True) # Make new directory
     newdir = directory+'/'+vel_str
+    os.makedirs(newdir,exist_ok=True) # Make new directory
+    
     
     # Convert total velocity in cm/yr to half velocity in m/yr
     v = (vel/2)/100
