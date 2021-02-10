@@ -27,17 +27,18 @@ def thickness(thickness,directory=".",base=100):
     for file in os.listdir(directory):
         if file.endswith('100km_base.prm'): # Find the base .prm file
             filename = os.path.join(directory,file) # Join root to filename
+            # Get new file name for use later.
             newfilename = file.replace(str(base),str(thickness))
 
-    with open(filename) as f_prm: #open the file
-        contents = f_prm.read() #read file as lines
+    with open(filename) as f_prm: # Open the file
+        contents = f_prm.read() # Read file
         copy = contents
         for param in params:
             old = param+'='+str(round(base_thermal[param],5))
             new = param+'='+str(round(thermal[param],5))
             copy = copy.replace(old,new)
                     
-        newpath = os.path.join(newdir,newfilename)
+        newpath = os.path.join(newdir,newfilename) # Create new path
         newfile = open(newpath,"w")
         newfile.writelines(copy)
         newfile.close()
