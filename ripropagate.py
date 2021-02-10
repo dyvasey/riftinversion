@@ -12,9 +12,9 @@ def thickness(thickness,directory=".",base=100):
     """
     Convert .prm file to new lithospheric thickness.
     """
-    thick_str = str(thickness)+'km' # String version of thickness
-    os.makedirs(thick_str,exist_ok=True) # Make new directory
+    thick_str = str(thickness)+'km' # String version of thickness  
     newdir = directory+'/'+thick_str
+    os.makedirs(newdir,exist_ok=True) # Make new directory
     
     csv = 'thermal_'+thick_str+'.csv'
     thermal = pd.read_csv(csv,index_col=0).squeeze().to_dict()
