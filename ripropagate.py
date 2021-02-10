@@ -48,28 +48,32 @@ def evelocity(vel,directory=".",base=1):
     """
     Convert base .prm file to new extension velocity.
     """
+    vel_str = str(vel)+'cm' # String version of velocity
+    vel_str = vel_str.replace('.','-') # Make sure no decimals
+    os.makedirs(vel_str,exist_ok=True) # Make new directory
+    newdir = directory+'/'+vel_str
+    
     # Convert total velocity in cm/yr to half velocity in m/yr
     v = (vel/2)/100
     v_base = (base/2)/100 
     
     for file in os.listdir(directory):
-        if file.endswith('base.prm'): # Find all the base .prm files
+        if file.endswith('base.prm'): # Find the base .prm file
             filename = os.path.join(directory,file) # Join root to filename
+            # Get new file name for use later.
+            oldname = str(base)+'cm'
+            newfilename = file.replace(oldname,vel_str)
 
-            with open(filename) as f_prm: #open each file
-                contents = f_prm.read() #read file as lines
-                copy = contents
-                old = 'v='+str(v_base)
-                new = 'v='+str(v)
-                copy = copy.replace(old,new)
-            
-                oldname = str(base)+'cm'
-                newname = str(vel)+'cm'
-                # Make sure no decimals in the new filename
-                newname = newname.replace('.','-') 
-                newfilename = filename.replace(oldname,newname)
-                newfile = open(newfilename,"w")
-                newfile.writelines(copy)
-                newfile.close()
+    with open(filename) as f_prm: # Open the file
+        contents = f_prm.read() # Read the file
+        copy = contents
+        old = 'v='+str(v_base)
+        new = 'v='+str(v)
+        copy = copy.replace(old,new)
+         
+        newpath = os.path.join(newdir,newfilename) # Create new path
+        newfile = open(newpath,"w")
+        newfile.writelines(copy)
+        newfile.close()
     return(copy)
     
