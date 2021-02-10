@@ -13,8 +13,8 @@ def thickness(thickness,directory=".",base=100):
     Convert .prm file to new lithospheric thickness.
     """
     thick_str = str(thickness)+'km' # String version of thickness
-    os.mkdir(thick_str,exist_ok=True) # Make new directory
-    root = directory+'/'+thick_str
+    os.makedirs(thick_str,exist_ok=True) # Make new directory
+    newdir = directory+'/'+thick_str
     
     csv = 'thermal_'+thick_str+'.csv'
     thermal = pd.read_csv(csv,index_col=0).squeeze().to_dict()
@@ -26,7 +26,8 @@ def thickness(thickness,directory=".",base=100):
     
     for file in os.listdir(directory):
         if file.endswith('100km_base.prm'): # Find the base .prm file
-            filename = os.path.join(root,file) # Join root to filename
+            filename = os.path.join(directory,file) # Join root to filename
+            newfilename = file.replace(str(base),str(thickness))
 
     with open(filename) as f_prm: #open the file
         contents = f_prm.read() #read file as lines
@@ -35,9 +36,9 @@ def thickness(thickness,directory=".",base=100):
             old = param+'='+str(round(base_thermal[param],5))
             new = param+'='+str(round(thermal[param],5))
             copy = copy.replace(old,new)
-                
-        newfilename = filename.replace(str(base),str(thickness))
-        newfile = open(newfilename,"w")
+                    
+        newpath = os.path.join(newdir,newfilename)
+        newfile = open(newpath,"w")
         newfile.writelines(copy)
         newfile.close()
     return(copy)
