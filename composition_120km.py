@@ -13,7 +13,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 plot_or_not = 'yes'
 
 xmin    =   0.0e3
-xmax    = 800.0e3
+xmax    = 1000.0e3
 ymin    =   0.0e3
 ymax    = 200.0e3
 gres    =   2.0e3
@@ -21,8 +21,8 @@ rmin    =   0.5
 rmax    =   1.5
 
 # Plastic strain
-xmin_ep = 250.e3
-xmax_ep = 550.e3
+xmin_ep = 375.e3
+xmax_ep = 625.e3
 ymax_ep = 200.e3
 ymin_ep = 140.e3
 
