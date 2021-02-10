@@ -8,12 +8,11 @@ import re
 import numpy as np
 import pandas as pd
 
-def thickness(thickness,directory=".",base=100):
+def thickness(thickness,directory,base=100):
     """
     Convert .prm file to new lithospheric thickness.
     """
     thick_str = str(thickness)+'km' # String version of thickness  
-    #newdir = directory+'/'+thick_str
     os.makedirs(directory,exist_ok=True) # Make new directory
     
     csv = 'thermal_'+thick_str+'.csv'
