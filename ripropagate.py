@@ -43,6 +43,8 @@ def thickness(thickness,directory,base=100):
         newfile.close()
     return(copy)
 
+# Need to add changes to adiabatic conditions function as well - has 100km value.
+
 def evelocity(vel,directory,base=1):
     """
     Convert base .prm file to new extension velocity.
