@@ -43,21 +43,21 @@ def thickness(thickness,directory,base=100):
         newfile.close()
     return(copy)
 
-def evelocity(vel,directory=".",base=1):
+def evelocity(vel,directory,base=1):
     """
     Convert base .prm file to new extension velocity.
     """
     vel_str = str(vel)+'cm' # String version of velocity
     vel_str = vel_str.replace('.','-') # Make sure no decimals
-    newdir = directory+'/'+vel_str
-    os.makedirs(newdir,exist_ok=True) # Make new directory
+
+    os.makedirs(directory,exist_ok=True) # Make new directory
     
     
     # Convert total velocity in cm/yr to half velocity in m/yr
     v = (vel/2)/100
     v_base = (base/2)/100 
     
-    for file in os.listdir(directory):
+    for file in os.listdir('./'+):
         if file.endswith('base.prm'): # Find the base .prm file
             filename = os.path.join(directory,file) # Join root to filename
             # Get new file name for use later.
@@ -71,7 +71,7 @@ def evelocity(vel,directory=".",base=1):
         new = 'v='+str(v)
         copy = copy.replace(old,new)
          
-        newpath = os.path.join(newdir,newfilename) # Create new path
+        newpath = os.path.join(directory,newfilename) # Create new path
         newfile = open(newpath,"w")
         newfile.writelines(copy)
         newfile.close()
