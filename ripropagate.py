@@ -65,6 +65,10 @@ def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
              shell='run_base.sh'):
     """
     Generate .prm file from dummy base file.
+    
+    Can be used to generate discrete extension, quiescence, or convergence
+    file. For quiescence, set evel = 0. For convergence, set evel to a 
+    negative number.
     """
     lthick_str = str(lthick)+'km' # String version of thickness  
     vel_str = str(evel)+'cm' # String version of velocity
