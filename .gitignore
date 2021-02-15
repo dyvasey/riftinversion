@@ -1,6 +1,5 @@
 composition.txt
 *.csv
 *.png
-80km
-100km
-120km
+*.prm
+!ri_base.prm
