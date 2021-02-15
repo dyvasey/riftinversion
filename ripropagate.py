@@ -29,7 +29,7 @@ def lthickness(text,lthick):
         text = text.replace(old,new)
     
     # Replace Adiabatic function expression
-    text = text.replace('x>XXX','X>'+str(lthick)+'.e3')
+    text = text.replace('x>XXX','x>'+str(lthick)+'.e3')
     
     return(text)
 
