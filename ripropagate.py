@@ -49,7 +49,7 @@ def evelocity(text,evel):
     
     return(text)
 
-def generate(file,output='.',lthick=100,evel=1):
+def generate(file='ri_base.prm',output='.',lthick=100,evel=1):
     """
     Generate .prm file from dummy base file. Thickness only.
     """
