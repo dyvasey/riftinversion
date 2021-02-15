@@ -68,8 +68,9 @@ def generate(file='ri_base.prm',output='.',lthick=100,evel=1,etime=50):
     lthick_str = str(lthick)+'km' # String version of thickness  
     vel_str = str(evel)+'cm' # String version of velocity
     vel_str = vel_str.replace('.','-') # Make sure no decimals
+    time_str = str(etime)+'Myr' # String version of time
     
-    fullstring = vel_str+'_'+lthick_str
+    fullstring = vel_str+'_'+lthick_str+'_'+time_str
     
     path = os.path.join('.',file) # Join root to filename
     newname = file.replace('base',fullstring) # Change file name
