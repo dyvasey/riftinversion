@@ -33,12 +33,23 @@ def lthickness(text,lthick):
     
     return(text)
 
-def generate(file,lthick=100):
+def generate(file,output='.',lthick=100):
     """
-    Generate .prm file from dummy base file
+    Generate .prm file from dummy base file. Thickness only.
     """
-
-
+    lthick_str = str(lthick)+'km' # String version of thickness  
+    
+    for file in os.listdir('.'):
+        if file.endswith('_base.prm'): # Find the base .prm file
+            path = os.path.join('.',file) # Join root to filename
+            newname = file.replace('base',lthick_str) # Change file name
+    with open(filename) as f_prm: # Open the file
+        contents = f_prm.read() # Read file into string
+        contents = lthickness(contents,lthick)
+        newpath = os.path.join(output,newname)
+        newfile = open(newpath,"w")
+        newfile.writelines(contents)
+        newfile.close()
 
 
 def thickness(thickness,directory,base=100):
