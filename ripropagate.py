@@ -57,12 +57,15 @@ def generate(file,output='.',lthick=100,evel=1):
     vel_str = str(evel)+'cm' # String version of velocity
     vel_str = vel_str.replace('.','-') # Make sure no decimals
     
+    fullstring = vel_str+'_'+lthick_str
+    
     path = os.path.join('.',file) # Join root to filename
-    newname = file.replace('base',lthick_str) # Change file name
+    newname = file.replace('base',fullstring) # Change file name
     
     with open(path) as f_prm: # Open the file
         contents = f_prm.read() # Read file into string
         contents = lthickness(contents,lthick)
+        contents = evelocity(contents,evel)
         newpath = os.path.join(output,newname)
         newfile = open(newpath,"w")
         newfile.writelines(contents)
