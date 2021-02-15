@@ -61,10 +61,10 @@ def time(text,time):
     
     return(text)
 
-def gen_ext(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
+def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
              shell='run_base.sh'):
     """
-    Generate .prm file for extension from dummy base file.
+    Generate .prm file from dummy base file.
     """
     lthick_str = str(lthick)+'km' # String version of thickness  
     vel_str = str(evel)+'cm' # String version of velocity
@@ -98,42 +98,5 @@ def gen_ext(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
         new_spath = os.path.join(output,'run.sh')
         newfile = open(new_spath,"w")
         newfile.writelines(contents)
-        newfile.close()
-
-def gen_qui(file='ri_base.prm',lthick=100,time=50,output='.',
-            shell='run_base.sh'):
-    """
-    Generate .prm file for quiescence from dummy base file.
-    """
-    lthick_str = str(lthick)+'km' # String version of thickness  
-    time_str = str(time)+'Myr' # String version of time
-    
-    fullstring = lthick_str+'_qui_'+time_str
-    
-    path = os.path.join('.',file) # Join root to filename
-    newname = file.replace('base',fullstring) # Change file name
-
-    with open(path) as f_prm: # Open the file
-        contents = f_prm.read() # Read file into string
-        contents = lthickness(contents,lthick)
-        contents = evelocity(contents,0) # Set velocity to 0
-        contents = time(contents,time)
-        if 'XXX' in contents:
-            print('WARNING: PRM generated contains XXX') 
-        newpath = os.path.join(output,newname)
-        newfile = open(newpath,"w")
-        newfile.writelines(contents)
-        newfile.close()
-    
-    # Generate run.sh for Stampede2
-    spath = os.path.join('.',shell)
-    with open(spath) as f_sh: # Open the file
-        contents = f_sh.read() # Read file into string
-        contents = contents.replace('XXX',newname)
-        if 'XXX' in contents:
-            print('WARNING: PRM generated contains XXX')
-        new_spath = os.path.join(output,'run.sh')
-        newfile = open(new_spath,"w")
-        newfile.writelines(contents)
-        newfile.close()    
+        newfile.close()   
     
