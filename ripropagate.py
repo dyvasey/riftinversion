@@ -49,7 +49,20 @@ def evelocity(text,evel):
     
     return(text)
 
-def generate(file='ri_base.prm',output='.',lthick=100,evel=1):
+def time(text,etime):
+    """
+    Add time values
+    """
+    
+    base = 'XXX' # Dummy value in in base file
+    
+    old = 'set End time                                   = '+base
+    new = 'set End time                                   = '+str(etime)+'e6'
+    text = text.replace(old,new)
+    
+    return(text)
+
+def generate(file='ri_base.prm',output='.',lthick=100,evel=1,etime=50):
     """
     Generate .prm file from dummy base file. Thickness only.
     """
