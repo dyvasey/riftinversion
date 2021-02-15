@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J rirv1t10
+#SBATCH -J riftinv
 #SBATCH -o log_ri_rift_1cm_100km_base
 #SBATCH -e %j
 #SBATCH -p skx-normal
@@ -15,6 +15,6 @@ module load gcc/7.1.0
 ASP="/work/07937/davasey/stampede2/software/aspect/build/./aspect"
 
 # Run model.  Submit job with "sbatch run.sh"
-ibrun $ASP ri_rift_1cm_100km_base.prm
+ibrun $ASP XXX
 
 

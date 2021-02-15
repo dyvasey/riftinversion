@@ -61,7 +61,8 @@ def time(text,etime):
     
     return(text)
 
-def generate(file='ri_base.prm',output='.',lthick=100,evel=1,etime=50):
+def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
+             shell='run_base.sh'):
     """
     Generate .prm file from dummy base file.
     """
@@ -86,6 +87,13 @@ def generate(file='ri_base.prm',output='.',lthick=100,evel=1,etime=50):
         newfile = open(newpath,"w")
         newfile.writelines(contents)
         newfile.close()
-
-
     
+    # Generate run.sh for Stampede2
+    spath = os.path.join('.',shell)
+    with open(spath) as f_sh: # Open the file
+        contents = f_sh.read() # Read file into string
+        contents = contents.replace('XXX',newname)
+        new_spath = os.path.join(output,'run.sh')
+        newfile = open(new_spath,"w")
+        newfile.writelines(contents)
+        newfile.close()
