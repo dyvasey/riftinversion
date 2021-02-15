@@ -37,9 +37,6 @@ def evelocity(text,evel):
     """
     Add extension velocity
     """
-    
-    vel_str = str(evel)+'cm' # String version of velocity
-    vel_str = vel_str.replace('.','-') # Make sure no decimals
         
     # Convert total velocity in cm/yr to half velocity in m/yr
     v = (evel/2)/100
@@ -52,11 +49,13 @@ def evelocity(text,evel):
     
     return(text)
 
-def generate(file,output='.',lthick=100):
+def generate(file,output='.',lthick=100,evel=1):
     """
     Generate .prm file from dummy base file. Thickness only.
     """
     lthick_str = str(lthick)+'km' # String version of thickness  
+    vel_str = str(evel)+'cm' # String version of velocity
+    vel_str = vel_str.replace('.','-') # Make sure no decimals
     
     path = os.path.join('.',file) # Join root to filename
     newname = file.replace('base',lthick_str) # Change file name
