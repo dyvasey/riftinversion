@@ -18,17 +18,27 @@ def lthickness(text,lthick):
     csv = 'thermal_'+thick_str+'.csv'
     thermal = pd.read_csv(csv,index_col=0).squeeze().to_dict()
     
-    base_thermal = 'XXX' # Dummy value in in base file
+    base = 'XXX' # Dummy value in in base file
     
     params = ['ts1','ts2','ts3','ts4','qs1','qs2','qs3']
 
     # Replace thermal parameters
     for param in params:
-        old = param+'='+base_thermal
+        old = param+'='+base
         new = param+'='+str(round(thermal[param],5))
         text = text.replace(old,new)
     
+    # Replace Adiabatic function expression
+    text = text.replace('x>XXX','X>'+str(thickness)+'.e3')
+    
     return(text)
+
+def generate(file,lthick=100):
+    """
+    Generate .prm file from dummy base file
+    """
+
+
 
 
 def thickness(thickness,directory,base=100):

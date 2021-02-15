@@ -1,7 +1,7 @@
 #  Global parameters
 set Dimension                                  = 2
 set Start time                                 = 0
-set End time                                   = 50e6
+set End time                                   = XXX
 set Resume computation                         = auto
 set Use years in output instead of seconds     = true
 set Nonlinear solver scheme                    = single Advection, iterated Newton Stokes
@@ -30,7 +30,7 @@ subsection Adiabatic conditions model
                              0; \
                              if( x<=20.e3, 1, 0); \
                              if( x>20.e3 && x<=40.e3, 1, 0); \
-                             if( x>100.e3, 1, 0);
+                             if( x>XXX, 1, 0);
   end
 end
 
@@ -152,7 +152,7 @@ subsection Initial temperature model
                              0; \
                              if( x<=20.e3, 1, 0); \
                              if( x>20.e3 && x<=40.e3, 1, 0); \
-                             if( x>100.e3, 1, 0);
+                             if( x>XXX, 1, 0);
     end
   end
   subsection Function
