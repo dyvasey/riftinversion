@@ -63,7 +63,7 @@ def time(text,etime):
 
 def generate(file='ri_base.prm',output='.',lthick=100,evel=1,etime=50):
     """
-    Generate .prm file from dummy base file. Thickness only.
+    Generate .prm file from dummy base file.
     """
     lthick_str = str(lthick)+'km' # String version of thickness  
     vel_str = str(evel)+'cm' # String version of velocity
