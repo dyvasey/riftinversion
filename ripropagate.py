@@ -14,7 +14,7 @@ def lthickness(text,lthick):
     """
     
     # Read in thermal values from csv
-    thick_str = str(thickness)+'km' # String version of thickness  
+    thick_str = str(lthick)+'km' # String version of thickness  
     csv = 'thermal_'+thick_str+'.csv'
     thermal = pd.read_csv(csv,index_col=0).squeeze().to_dict()
     
@@ -29,7 +29,7 @@ def lthickness(text,lthick):
         text = text.replace(old,new)
     
     # Replace Adiabatic function expression
-    text = text.replace('x>XXX','X>'+str(thickness)+'.e3')
+    text = text.replace('x>XXX','X>'+str(lthick)+'.e3')
     
     return(text)
 
@@ -102,7 +102,7 @@ def evelocity(vel,directory,base=1):
     v = (vel/2)/100
     v_base = (base/2)/100 
     
-    for file in os.listdir('./'+):
+    for file in os.listdir('.'):
         if file.endswith('base.prm'): # Find the base .prm file
             filename = os.path.join(directory,file) # Join root to filename
             # Get new file name for use later.
