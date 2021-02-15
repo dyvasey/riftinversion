@@ -93,6 +93,8 @@ def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
     with open(spath) as f_sh: # Open the file
         contents = f_sh.read() # Read file into string
         contents = contents.replace('XXX',newname)
+        if 'XXX' in contents:
+            print('WARNING: PRM generated contains XXX')
         new_spath = os.path.join(output,'run.sh')
         newfile = open(new_spath,"w")
         newfile.writelines(contents)
