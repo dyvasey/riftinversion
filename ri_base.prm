@@ -102,7 +102,7 @@ subsection Boundary velocity model
 
   subsection Function
     set Variable names      = x,y
-    set Function constants  = v=0.005, d=200.e3, w=1000.e3
+    set Function constants  = v=XXX, d=200.e3, w=1000.e3
     set Function expression = if (x<w/2 , -v, v); v*2*d/w
   end
 end
@@ -157,10 +157,10 @@ subsection Initial temperature model
   end
   subsection Function
     set Variable names = x,y
-    set Function constants = h=200.e3,ts1=273,ts2=616.68,ts3=860.36,ts4=1531.4,ast=1573, \
+    set Function constants = h=200.e3,ts1=XXX,ts2=XXX,ts3=XXX,ts4=XXX,ast=1573, \
                              A1=1.e-6,A2=0.25e-6,A3=0.0, \
                              k1=2.5,k2=2.5,k3=2.5, \
-                             qs1=0.05296,qs2=0.03296,qs3=0.02796
+                             qs1=XXX,qs2=XXX,qs3=XXX
     set Function expression = if( (h-y)<=20.e3, \
                                   ts1 + (qs1/k1)*(h-y) - (A1*(h-y)*(h-y))/(2.0*k1) - ast, \
                                   if( (h-y)>20.e3 && (h-y)<=40.e3, \
