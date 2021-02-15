@@ -8,7 +8,7 @@ set Nonlinear solver scheme                    = single Advection, iterated Newt
 set Nonlinear solver tolerance                 = 1e-4
 set Max nonlinear iterations                   = 100
 set Max nonlinear iterations in pre-refinement = 5
-set CFL number                                 = 0.5
+set CFL number                                 = 0.2
 set Maximum time step                          = 20e3
 set Output directory                           = output_ri_rift
 set Timing output frequency                    = 1
@@ -67,9 +67,6 @@ subsection Solver parameters
   subsection Stokes solver parameters
     set Number of cheap Stokes solver steps = 0
     set Linear solver tolerance = 1e-7
-  end
-  subsection Advection solver parameters
-    set GMRES solver restart length = 100
   end
   subsection Newton solver parameters
     set Max Newton line search iterations        = 5
