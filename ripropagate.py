@@ -61,7 +61,7 @@ def time(text,time):
     
     return(text)
 
-def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
+def gen_ext(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
              shell='run_base.sh'):
     """
     Generate .prm file from dummy base file.
