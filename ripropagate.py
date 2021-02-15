@@ -79,6 +79,7 @@ def generate(file='ri_base.prm',output='.',lthick=100,evel=1,etime=50):
         contents = f_prm.read() # Read file into string
         contents = lthickness(contents,lthick)
         contents = evelocity(contents,evel)
+        contents = time(contents,etime)
         if 'XXX' in contents:
             print('WARNING: PRM generated contains XXX') 
         newpath = os.path.join(output,newname)
