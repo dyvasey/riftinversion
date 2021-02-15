@@ -48,7 +48,7 @@ def evelocity(text,evel):
     
     return(text)
 
-def time(text,etime):
+def time(text,time):
     """
     Add time values
     """
@@ -56,7 +56,7 @@ def time(text,etime):
     base = 'XXX' # Dummy value in in base file
     
     old = 'set End time                                   = '+base
-    new = 'set End time                                   = '+str(etime)+'e6'
+    new = 'set End time                                   = '+str(time)+'e6'
     text = text.replace(old,new)
     
     return(text)
