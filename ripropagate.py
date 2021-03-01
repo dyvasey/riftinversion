@@ -82,8 +82,27 @@ def time(text,time):
     
     return(text)
 
+def version(text,ver):
+    """
+    Add version letter to Stampede2 job name.
+    
+    Parameters:
+        text: String of sh file to alter
+        ver: Letter to add to job name
+    
+    Returns:
+        text: Altered sh string
+    """
+    if ver is None:
+        return(text)
+    else:
+        old = 'SBATCH -J riftinv'
+        new = 'SBATCH -J riftinv'+ver
+        text = text.replace(old,new)    
+        return(text)
+
 def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
-             shell='run_base.sh'):
+             shell='run_base.sh',ver=None):
     """
     Generate .prm file from dummy base file.
     
@@ -98,6 +117,7 @@ def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
         etime: Total model time (Myr)
         output: Directory to place generated file
         shell: Name of base shell script for Stampede2 to generate
+        version: Version letter to add to Stampede2 job name
     
     Returns:
         None
@@ -129,6 +149,7 @@ def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
     with open(spath) as f_sh: # Open the file
         contents = f_sh.read() # Read file into string
         contents = contents.replace('XXX',newname)
+        contents = version(contents,ver)
         if 'XXX' in contents:
             print('WARNING: .sh generated contains XXX')
         new_spath = os.path.join(output,'run.sh')
