@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -J riftinv
-#SBATCH -o log_ri_rift_1cm_100km_base
+#SBATCH -o log_XXX
 #SBATCH -e %j
 #SBATCH -p skx-normal
 #SBATCH -t 48:00:00
