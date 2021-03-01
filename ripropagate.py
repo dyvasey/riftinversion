@@ -93,16 +93,13 @@ def version(text,ver):
     Returns:
         text: Altered sh string
     """
-    if ver is None:
-        return(text)
-    else:
-        old = 'SBATCH -J riftinv'
-        new = 'SBATCH -J riftinv'+ver
-        text = text.replace(old,new)    
-        return(text)
+    old = 'SBATCH -J riftinv'
+    new = 'SBATCH -J riftinv'+ver
+    text = text.replace(old,new)    
+    return(text)
 
 def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
-             shell='run_base.sh',ver=None):
+             shell='run_base.sh',ver=''):
     """
     Generate .prm file from dummy base file.
     
