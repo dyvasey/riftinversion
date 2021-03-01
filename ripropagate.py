@@ -123,6 +123,7 @@ def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
     vel_str = str(evel)+'cm' # String version of velocity
     vel_str = vel_str.replace('.','-') # Make sure no decimals
     time_str = str(etime)+'Myr' # String version of time
+    time_str = time_str.replace('.','-') # Make sure no decimals
     
     fullstring = vel_str+'_'+lthick_str+'_'+time_str
     

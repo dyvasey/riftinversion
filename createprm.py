@@ -13,3 +13,5 @@ folders = [str(x)+'Myr' for x in times]
 for x in range(len(times)):
     ripropagate.generate(etime=times[x],ver=versions[x],output=folders[x])
 
+ripropagate.generate(etime=12.2)
+
