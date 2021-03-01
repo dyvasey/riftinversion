@@ -9,7 +9,14 @@ import pandas as pd
 
 def lthickness(text,lthick):
     """
-    Replace thermal values and other parameters to alter lithospheric thickness
+    Replace thermal values and other parameters to alter lithosphere thickness
+    
+    Parameters:
+        text: String of prm base file to alter
+        lthick: Lithosphere thickness (km)
+    
+    Returns:
+        text: Altered prm string
     """
     
     # Read in thermal values from csv
@@ -35,6 +42,13 @@ def lthickness(text,lthick):
 def evelocity(text,evel):
     """
     Add extension velocity
+    
+    Parameters:
+        text: String of prm base file to alter
+        evel: Total extension velocity (cm)
+    
+    Returns:
+        text: Altered prm string
     """
         
     # Convert total velocity in cm/yr to half velocity in m/yr
@@ -51,6 +65,13 @@ def evelocity(text,evel):
 def time(text,time):
     """
     Add time values
+    
+    Parameters:
+        text: String of prm base file to alter
+        evel: Time to run model (Myr)
+    
+    Returns:
+        text: Altered prm string
     """
     
     base = 'XXX' # Dummy value in in base file
@@ -69,6 +90,17 @@ def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
     Can be used to generate discrete extension, quiescence, or convergence
     file. For quiescence, set evel = 0. For convergence, set evel to a 
     negative number.
+    
+    Parameters:
+        file: Path to prm base file to alter
+        lthick: Lithosphere thickness (km)
+        evel: Total extension velocity (cm)
+        etime: Total model time (Myr)
+        output: Directory to place generated file
+        shell: Name of base shell script for Stampede2 to generate
+    
+    Returns:
+        None
     """
     lthick_str = str(lthick)+'km' # String version of thickness  
     vel_str = str(evel)+'cm' # String version of velocity
@@ -103,6 +135,5 @@ def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
         newfile = open(new_spath,"w")
         newfile.writelines(contents)
         newfile.close()
-        
-    return(contents)
+    return
     
