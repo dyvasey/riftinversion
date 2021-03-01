@@ -1,7 +1,8 @@
 __pycache__
 composition.txt
-run.sh
+*.sh
 *.csv
 *.png
 *.prm
 !ri_base.prm
+!run_base.sh
