@@ -10,4 +10,6 @@ times = [5,10,15,20]
 versions = ['a','b','c','d']
 
 for x in range(len(times)):
-    ripropagate.generate(etime=times[x],ver=versions[x]) 
+    ripropagate.generate(etime=times[x],ver=versions[x])
+
+ripropagate.generate(etime=25,output='25Myr')

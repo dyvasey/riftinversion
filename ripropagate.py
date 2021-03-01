@@ -129,6 +129,9 @@ def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
     path = os.path.join('.',file) # Join root to filename
     newname = file.replace('base',fullstring) # Change file name
     
+    if os.path.exists(output)==False:
+        os.makedirs(output)
+    
     with open(path) as f_prm: # Open the file
         contents = f_prm.read() # Read file into string
         contents = lthickness(contents,lthick)
