@@ -152,7 +152,7 @@ def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
         contents = version(contents,ver)
         if 'XXX' in contents:
             print('WARNING: .sh generated contains XXX')
-        new_spath = os.path.join(output,'run'+ver+'.sh')
+        new_spath = os.path.join(output,'run.sh')
         newfile = open(new_spath,"w",newline='\n')
         newfile.writelines(contents)
         newfile.close()
