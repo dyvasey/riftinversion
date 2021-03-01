@@ -102,5 +102,7 @@ def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
         new_spath = os.path.join(output,'run.sh')
         newfile = open(new_spath,"w")
         newfile.writelines(contents)
-        newfile.close()   
+        newfile.close()
+        
+    return(contents)
     
