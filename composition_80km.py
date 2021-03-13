@@ -67,8 +67,8 @@ for i in range(y.size):
           ep[j,i] = rmin + (np.random.random() * (rmax - rmin))
       
       # Write spatial coordinates
-      outfile.write('%-8.2e  ' % (x[j]))
-      outfile.write('%-8.2e  ' % (y[i]))
+      outfile.write('%-8.3e  ' % (x[j]))
+      outfile.write('%-8.3e  ' % (y[i]))
 
       # Write elastic stresses
       if wela == 'true':
