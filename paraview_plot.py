@@ -8,8 +8,19 @@ import numpy as np
 import pyvista as pv
 
 def byerlee(density,depth):
-    # density kg/m^3
-    # depth m
+    """
+    Calculate failure criterion from density and depth using Byerlee's Law.
+
+    Parameters
+    ----------
+    density: Density of material (kg/m^3)
+    depth : Depth of material (m)      
+
+    Returns
+    -------
+    tau : Shear stress (Pa)
+
+    """
     
     g = 9.81 # m/s^2
     lith_stress = density*g*depth # Pa (kg/m*s^2)
@@ -19,36 +30,32 @@ def byerlee(density,depth):
     
     return(tau)
 
-def viscosity(temperature,pressure=0,strain_rate=0,flow_law='wet quartz'):
-    """ Currently broken """
-    if flow_law=='wet quartz':
-        A = 8.57e-28 # prefactor
-        n = 4.0 # stress exponent
-        E = 223e3 # activation energy
-        V = 0 # activation volume
-    
-    d = 0
-    m = 0
-    R = 8.314 # J/mol*K
-    
-    #visc = 0.5*A**(-1/n)*d**(m/n)*strain_rate
-    visc_simple = A*np.exp(E/R*temperature)
-    
-    return(visc_simple)
-
 def strength_profile(data,strain_rate=1e-15,ax=None,**kwargs):
+    """
+    Plot strength profile from Paraview CSV.
+
+    Parameters
+    ----------
+    data : DataFrame containing density, viscosity, temperature data 
+    strain_rate : Strain rate in s^-1. The default is 1e-15.
+    ax : Axes on which to plot the profile. The default is None.
+
+    Returns
+    -------
+    ax : Axes with strain profile plotted
+
+    """
     if ax==None:
         ax=plt.gca()
     
     # Get key variables
     depth = abs(data['Points:1']-200000) # m
     visc = data['viscosity']
-    #strain_rate = data['strain_rate']
+
     density = data['density']
     temperature = data['T']
     
     tau = byerlee(density,depth)
-
     
     viscous_strength = 2*visc*strain_rate
     
@@ -67,6 +74,19 @@ def strength_profile(data,strain_rate=1e-15,ax=None,**kwargs):
     return(ax)
 
 def temperature(data,ax=None,**kwargs):
+    """
+    Plot temperature profile from Paraview CSV.
+
+    Parameters
+    ----------
+    data : DataFrame containing temperature data 
+    ax : Axes on which to plot the profile. The default is None.
+
+    Returns
+    -------
+    ax : Axes with temperature profile plotted
+
+    """
     if ax==None:
         ax=plt.gca()
     
@@ -85,6 +105,20 @@ def temperature(data,ax=None,**kwargs):
     return(ax)
 
 def grid(data,ax=None,field='density',**kwargs):
+    """
+    Plot grid from Paraview CSV using Matplotlib tricontourf.
+
+    Parameters
+    ----------
+    data : DataFrame of Paraview CSV data
+    ax : Axes on which to plot the grid. The default is None.
+    field : ParaView field to use to color the grid. The default is 'density'.
+
+    Returns
+    -------
+    ax : Axes with grid plotted.
+
+    """
     if ax==None:
         ax=plt.gca()
     
@@ -99,6 +133,25 @@ def grid(data,ax=None,field='density',**kwargs):
 
 def comp_field(df,fields=['crust_upper','crust_lower','mantle_lithosphere'],
                null_field='asthenosphere'):
+    """
+    Create compositional field category for Paraview plotting.
+    
+    Uses input fields to assign value based on when fields are >0.9. Any point
+    lacking a field >0.9 is assigned to the null field.
+
+    Parameters
+    ----------
+    df : DataFrame with field information.
+    fields : Names of compositional fields to use The default is 
+        ['crust_upper','crust_lower','mantle_lithosphere'].
+    null_field : Name of field to assign all values <0.9 for each field.
+        The default is 'asthenosphere'.
+
+    Returns
+    -------
+    output : Series with compositional field values.
+
+    """
 
     output = pd.Series(np.nan,index=df.index)
     for x in range(len(fields)):
@@ -107,6 +160,18 @@ def comp_field(df,fields=['crust_upper','crust_lower','mantle_lithosphere'],
     return(output)
 
 def cmyk2rgb(cmyk):
+    """
+    " Convert CMYK colors to RGB"
+
+    Parameters
+    ----------
+    cmyk : List or tuple of colors as C,M,Y,K
+
+    Returns
+    -------
+    rgb : Tuple of colors as R,G,B
+
+    """
     r = (1-cmyk[0]/100)*(1-cmyk[3]/100)
     g = (1-cmyk[1]/100)*(1-cmyk[3]/100)
     b = (1-cmyk[2]/100)*(1-cmyk[3]/100)
