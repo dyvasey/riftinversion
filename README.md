@@ -1,5 +1,7 @@
 # Rift Inversion in ASPECT Project
 
-Includes current source files (.prm, .py) used in the ASPECT rift inversion project. Models are currently being run on Stampede2, testing only the rifting phase. Git repository used primarily for version control to avoid unwieldy file names.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+Includes current source files (.prm, .py,.sh) used in the ASPECT rift inversion project, as well as lab notebooks (.ipynb) detailing modeling history. Models are currently being run on Stampede2. 
 
 
