@@ -37,6 +37,9 @@ def lthickness(text,lthick):
     # Replace Adiabatic function expression
     text = text.replace('x>XXX','x>'+str(lthick)+'.e3')
     
+    # Replace temperature function expression
+    text = text.replace('(h-y)<=XXX','(h-y)<='+str(lthick)+'.e3')
+    
     return(text)
 
 def evelocity(text,evel):

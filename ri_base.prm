@@ -164,7 +164,7 @@ subsection Initial temperature model
   end
   subsection Function
     set Variable names = x,y
-    set Function constants = h=200.e3,ts1=XXX,ts2=XXX,ts3=XXX,ts4=XXX,ast=1573, \
+    set Function constants = h=300.e3,ts1=XXX,ts2=XXX,ts3=XXX,ts4=XXX,ast=1573, \
                              A1=1.e-6,A2=0.25e-6,A3=0.0, \
                              k1=2.5,k2=2.5,k3=2.5, \
                              qs1=XXX,qs2=XXX,qs3=XXX
@@ -172,7 +172,7 @@ subsection Initial temperature model
                                   ts1 + (qs1/k1)*(h-y) - (A1*(h-y)*(h-y))/(2.0*k1) - ast, \
                                   if( (h-y)>20.e3 && (h-y)<=40.e3, \
                                       ts2 + (qs2/k2)*(h-y-20.e3) - (A2*(h-y-20.e3)*(h-y-20.e3))/(2.0*k2) - ast, \
-                                      if( (h-y)>40.e3 && (h-y)<=100.e3, \
+                                      if( (h-y)>40.e3 && (h-y)<=XXX, \
                                            ts3 + (qs3/k3)*(h-y-40.e3) - (A3*(h-y-40.e3)*(h-y-40.e3))/(2.0*k3) - ast, \
                                            ts4 - ast ) ) );
   end
