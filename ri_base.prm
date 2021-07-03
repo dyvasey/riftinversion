@@ -38,15 +38,15 @@ subsection Adiabatic conditions model
   end
 end
 
-# Model geometry (1000x200 km, 4 km spacing)
+# Model geometry (1000x300 km, 4 km spacing)
 subsection Geometry model
   set Model name = box
   subsection Box
     set X repetitions = 250
-    set Y repetitions = 50
+    set Y repetitions = 75
 
     set X extent      = 1000e3
-    set Y extent      = 200e3
+    set Y extent      = 300e3
 
   end
 end
@@ -106,7 +106,7 @@ subsection Boundary velocity model
 
   subsection Function
     set Variable names      = x,y
-    set Function constants  = v=XXX, d=200.e3, w=1000.e3
+    set Function constants  = v=XXX, d=300.e3, w=1000.e3
     set Function expression = if (x<w/2 , -v, v); v*2*d/w
   end
 end
