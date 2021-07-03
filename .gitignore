@@ -1,9 +1,10 @@
-__pycache__
 .ipynb_checkpoints
 composition.txt
+*/
 *.sh
 *.csv
 *.png
 *.prm
 !ri_base.prm
 !run_base.sh
+!lab_notebooks_archived/
