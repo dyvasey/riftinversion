@@ -38,15 +38,15 @@ subsection Adiabatic conditions model
   end
 end
 
-# Model geometry (1000x300 km, 4 km spacing)
+# Model geometry (1000x400 km, 4 km spacing)
 subsection Geometry model
   set Model name = box
   subsection Box
     set X repetitions = 250
-    set Y repetitions = 75
+    set Y repetitions = 100
 
     set X extent      = 1000e3
-    set Y extent      = 300e3
+    set Y extent      = 400e3
 
   end
 end
@@ -106,7 +106,7 @@ subsection Boundary velocity model
 
   subsection Function
     set Variable names      = x,y
-    set Function constants  = v=XXX, d=300.e3, w=1000.e3
+    set Function constants  = v=XXX, d=400.e3, w=1000.e3
     set Function expression = if (x<w/2 , -v, v); v*2*d/w
   end
 end
@@ -164,7 +164,7 @@ subsection Initial temperature model
   end
   subsection Function
     set Variable names = x,y
-    set Function constants = h=300.e3,ts1=XXX,ts2=XXX,ts3=XXX,ts4=XXX,ast=1573, \
+    set Function constants = h=400.e3,ts1=XXX,ts2=XXX,ts3=XXX,ts4=XXX,ast=1573, \
                              A1=1.e-6,A2=0.25e-6,A3=0.0, \
                              k1=2.5,k2=2.5,k3=2.5, \
                              qs1=XXX,qs2=XXX,qs3=XXX
