@@ -15,7 +15,7 @@ plot_or_not = 'yes'
 xmin    =   0.0e3
 xmax    = 1000.0e3
 ymin    =   0.0e3
-ymax    = 300.0e3
+ymax    = 400.0e3
 gres    =   2.0e3
 rmin    =   0.5
 rmax    =   1.5
@@ -23,13 +23,13 @@ rmax    =   1.5
 # Plastic strain
 xmin_ep = 375.e3
 xmax_ep = 625.e3
-ymax_ep = 300.e3
-ymin_ep = 240.e3
+ymax_ep = 400.e3
+ymin_ep = 340.e3
 
 # Compositonal layers
-ymin_cu = 280.e3
-ymin_cl = 260.e3
-ymin_ml = 200.e3
+ymin_cu = 380.e3
+ymin_cl = 360.e3
+ymin_ml = 300.e3
 
 cfix    = 'true'
 wela    = 'true'
