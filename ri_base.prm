@@ -222,7 +222,7 @@ subsection Material model
     set Use fixed elastic time step = true
     set Use stress averaging        = true
 
-    set Viscosity averaging scheme = geometric
+    set Viscosity averaging scheme = harmonic
     set Viscous flow law = composite
 
     set Prefactors for dislocation creep          = 6.52e-16,   6.52e-16,   6.52e-16,    6.52e-16,   6.52e-16,   6.52e-16,   8.57e-28,   7.13e-18,   6.52e-16
