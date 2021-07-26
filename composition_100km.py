@@ -32,7 +32,7 @@ ymin_cl = 360.e3
 ymin_ml = 300.e3
 
 cfix    = 'true'
-wela    = 'true'
+wela    = 'false'
 
 # Setup of 2D spatial grid
 xpts = int((xmax - xmin)/gres) + 1
