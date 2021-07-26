@@ -28,9 +28,6 @@ subsection Adiabatic conditions model
     set Function expression = \
                              0; \
                              0; \
-                             0; \
-                             0; \
-                             0; \
                              if( x<=20.e3, 1, 0); \
                              if( x>20.e3 && x<=40.e3, 1, 0); \
                              if( x>XXX, 1, 0);
@@ -151,9 +148,6 @@ subsection Initial temperature model
     # the compositional fields in the functions below.
     subsection Function
           set Function expression = \
-                             0; \
-                             0; \
-                             0; \
                              0; \
                              0; \
                              if( x<=20.e3, 1, 0); \
