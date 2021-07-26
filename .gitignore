@@ -5,6 +5,6 @@ composition.txt
 *.csv
 *.png
 *.prm
-!ri_base.prm
+!ri_base*
 !run_base.sh
 !lab_notebooks_archived/
