@@ -33,6 +33,7 @@ ymin_ml = 300.e3
 
 cfix    = 'true'
 wela    = 'false'
+non_initial= 'false'
 
 # Setup of 2D spatial grid
 xpts = int((xmax - xmin)/gres) + 1
@@ -77,7 +78,8 @@ for i in range(y.size):
           outfile.write('%6.4f  ' % (0.0))
 
       # Write noninitial plastic strain values
-      outfile.write('%6.4f  ' % (0.0))
+      if non_initial == 'true':
+          outfile.write('%6.4f  ' % (0.0))
      
       # Write plastic strain values
       outfile.write('%6.4f  ' % (ep[j,i]))
