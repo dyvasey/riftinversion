@@ -169,11 +169,17 @@ def particle_trace(directory,timesteps,point,y_field,x_field='time',
         if x_field!='time':
             point_df.plot(x_field,y_field)
             plt.xlabel(x_field)
+            
+            # Label timesteps
+            for n in point_df.index:
+                plt.text(x=point_df.loc[n,x_field],y=point_df.loc[n,y_field],
+                     s=str(n))
         else:
             plt.plot(point_df.index,point_df[y_field])
             plt.xlabel('Timestep')
         plt.ylabel(y_field)
         plt.annotate('ID: '+str(point),xy=(0.1,0.9),xycoords='axes fraction')
+        
         
     return(point_df)
         
