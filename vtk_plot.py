@@ -119,6 +119,62 @@ def comp_field_vtk(mesh,fields=['crust_upper','crust_lower','mantle_lithosphere'
     
     mesh.point_arrays['comp_field'] = output
     return(mesh)
+
+def particle_trace(directory,timesteps,point,y_field,x_field='time',
+                   plot_path=False):
+    """
+    Get particle paths over time from pvtu files
+    """
+    # Set up directory building blocks
+    main = directory
+    prefix = 'particles-00'
+    suffix = '.pvtu'
     
+    # Get file paths for all timesteps
+    timesteps_str = [str(x).zfill(3) for x in timesteps.tolist()]
+    files = [main+'/'+prefix+x+suffix for x in timesteps_str]
     
+    x_point = []
+    y_point = []
+    
+    # Loop over files
+    for n in range(len(files)):
+        mesh = pv.read(files[n]) # Get mesh
+        ids = pv.point_array(mesh,'id') # Get particle ids
+        y_vals = pv.point_array(mesh,y_field) # Get y field values
+        
+        # Get x field values if not plotting timesteps
+        if x_field!='time':
+            x_vals = pv.point_array(mesh,x_field)
+            df = pd.DataFrame(
+                {x_field:x_vals,y_field:y_vals},index=ids.astype(int))
+        else:
+            df = pd.DataFrame({y_field:y_vals},index=ids.astype(int))
+        
+        # Extract values for specific points and add to lists
+        point_vals = df.loc[point,:]
+        y = point_vals[y_field]
+        if x_field!='time':
+            x = point_vals[x_field]
+            x_point.append(x)
+        y_point.append(y)
+        
+    # Convert lists to dataframe
+    if x_field!='time':
+        point_df = pd.DataFrame({x_field:x_point,y_field:y_point},index=timesteps)
+    else:
+        point_df = pd.DataFrame({y_field:y_point},index=timesteps)
+    
+    if plot_path is True:
+        if x_field!='time':
+            point_df.plot(x_field,y_field)
+            plt.xlabel(x_field)
+        else:
+            plt.plot(point_df.index,point_df[y_field])
+            plt.xlabel('Timestep')
+        plt.ylabel(y_field)
+        plt.annotate('ID: '+str(point),xy=(0.1,0.9),xycoords='axes fraction')
+        
+    return(point_df)
+        
 
