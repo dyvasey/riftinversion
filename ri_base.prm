@@ -254,7 +254,7 @@ end
 subsection Postprocess
 set List of postprocessors = basic statistics, composition statistics, heat flux densities, heat flux statistics, mass flux statistics, material statistics, pressure statistics, temperature statistics, topography, velocity statistics, visualization, particles, particle count statistics
   subsection Particles
-    set Number of particles = 24e3
+    set Number of particles = 48e4
     set Minimum particles per cell  = 25
     set Maximum particles per cell  = 35
     set Load balancing strategy     = remove and add particles
