@@ -1,0 +1,270 @@
+#  Global parameters
+set Dimension                                  = 2
+set Start time                                 = 0
+set End time                                   = XXX
+set Resume computation                         = auto
+set Use years in output instead of seconds     = true
+set Nonlinear solver scheme                    = single Advection, iterated defect correction Stokes
+set Nonlinear solver tolerance                 = 1e-4
+set Max nonlinear iterations                   = 100
+set Max nonlinear iterations in pre-refinement = 5
+set CFL number                                 = 0.2
+set Maximum time step                          = 10e3
+set Output directory                           = output_ri_rift
+set Timing output frequency                    = 1
+set Pressure normalization                     = no
+set Adiabatic surface temperature              = 1573
+
+# Governing equations
+subsection Formulation
+  set Formulation          = custom
+  set Mass conservation    = incompressible
+  set Temperature equation = reference density profile
+end
+
+subsection Adiabatic conditions model
+  subsection Compute profile
+    set Composition reference profile = function
+    set Function expression = \
+                             0; \
+                             if( x<=20.e3, 1, 0); \
+                             if( x>20.e3 && x<=40.e3, 1, 0); \
+                             if( x>XXX, 1, 0);
+  end
+end
+
+# Model geometry (1000x400 km, 4 km spacing)
+subsection Geometry model
+  set Model name = box
+  subsection Box
+    set X repetitions = 250
+    set Y repetitions = 100
+
+    set X extent      = 1000e3
+    set Y extent      = 400e3
+
+  end
+end
+
+# Globally refine to 1 km spacing
+subsection Mesh refinement
+  set Initial global refinement          = 2
+  set Initial adaptive refinement        = 0
+  set Time steps between mesh refinement = 0
+end
+
+# Q2Q1 Element
+subsection Discretization
+  set Composition polynomial degree           = 2
+  set Stokes velocity polynomial degree       = 2
+  set Temperature polynomial degree           = 2
+end
+
+# Solver parameters
+subsection Solver parameters
+  subsection Stokes solver parameters
+    set Number of cheap Stokes solver steps = 0
+    set Linear solver tolerance = 1e-7
+  end
+  subsection Newton solver parameters
+    set Max Newton line search iterations        = 5
+    set Max pre-Newton nonlinear iterations      = 100
+    set Maximum linear Stokes solver tolerance   = 1e-5
+    set Nonlinear Newton solver switch tolerance = 1e-5
+    set SPD safety factor                        = 0.9
+    set Stabilization preconditioner             = SPD
+    set Stabilization velocity block             = SPD
+    set Use Newton failsafe                      = false
+    set Use Newton residual scaling method       = false
+    set Use Eisenstat Walker method for Picard iterations = true
+  end
+end
+
+
+# Free surface advection (vertical or normal)
+subsection Mesh deformation
+  set Mesh deformation boundary indicators = top: free surface, top: diffusion
+  subsection Free surface
+    set Surface velocity projection = normal
+  end
+  subsection Diffusion
+    # The diffusivity
+    set Hillslope transport coefficient = 1.e-7
+  end
+end
+
+# Velocity on boundaries characterized by functions
+# Outflow on sides is balanced by inflow at base
+subsection Boundary velocity model
+  set Prescribed velocity boundary indicators = left x: function, right x:function, bottom y:function
+
+  subsection Function
+    set Variable names      = x,y
+    set Function constants  = v=XXX, d=400.e3, w=1000.e3
+    set Function expression = if (x<w/2 , -v, v); v*2*d/w
+  end
+end
+
+
+# Number and name of compositional fields
+subsection Compositional fields
+  set Number of fields = 4
+  set Names of fields = plastic_strain, crust_upper, crust_lower, mantle_lithosphere
+end
+
+
+# Spatial domain of different compositional fields
+subsection Initial composition model
+  set List of model names = ascii data
+  subsection Ascii data model
+    set Data directory = 
+    set Data file name = composition.txt
+  end
+end
+
+# Composition boundary conditions
+subsection Boundary composition model
+  set Fixed composition boundary indicators  = bottom
+  set Model name = initial composition
+end
+
+# Temperature boundary conditions
+subsection Boundary temperature model
+  set Fixed temperature boundary indicators = bottom, top
+  set List of model names = box
+  subsection Box
+    set Bottom temperature = 1573
+    set Top temperature    =  273
+  end
+end
+
+# Initial temperature field - combination of conductive profile through the lithosphere
+# and an adiabatic profile, which are added together.
+subsection Initial temperature model
+  set List of model names     = function, adiabatic
+  set List of model operators = add, add
+  subsection Adiabatic
+    # Not sure if it is necessary to specify the location of equation compositional field
+    # here or if this set properly in the Adiabatic conditions model subsection? An
+    # error is thrown if one tries to use spatial varies to define the values of
+    # the compositional fields in the functions below.
+    subsection Function
+          set Function expression = \
+                             0; \
+                             if( x<=20.e3, 1, 0); \
+                             if( x>20.e3 && x<=40.e3, 1, 0); \
+                             if( x>XXX, 1, 0);
+    end
+  end
+  subsection Function
+    set Variable names = x,y
+    set Function constants = h=400.e3,ts1=XXX,ts2=XXX,ts3=XXX,ts4=XXX,ast=1573, \
+                             A1=1.e-6,A2=0.25e-6,A3=0.0, \
+                             k1=2.5,k2=2.5,k3=2.5, \
+                             qs1=XXX,qs2=XXX,qs3=XXX
+    set Function expression = if( (h-y)<=20.e3, \
+                                  ts1 + (qs1/k1)*(h-y) - (A1*(h-y)*(h-y))/(2.0*k1) - ast, \
+                                  if( (h-y)>20.e3 && (h-y)<=40.e3, \
+                                      ts2 + (qs2/k2)*(h-y-20.e3) - (A2*(h-y-20.e3)*(h-y-20.e3))/(2.0*k2) - ast, \
+                                      if( (h-y)>40.e3 && (h-y)<=XXX, \
+                                           ts3 + (qs3/k3)*(h-y-40.e3) - (A3*(h-y-40.e3)*(h-y-40.e3))/(2.0*k3) - ast, \
+                                           ts4 - ast ) ) );
+  end
+end
+
+# Internal heating (only internal heating for crust)
+subsection Heating model
+  set List of model names = compositional heating, adiabatic heating, shear heating
+  subsection Compositional heating
+    set Use compositional field for heat production averaging = 1, 0, 1, 1, 1
+    set Compositional heating values = 0., 0., 1.0e-6, 0.25e-6, 0.0
+  end
+  subsection Adiabatic heating
+    set Use simplified adiabatic heating = true
+  end
+end
+
+# Material model
+subsection Material model
+  set Model name = visco plastic
+
+  # Harmonic averaging over the entire element
+  set Material averaging = harmonic average only viscosity
+
+  subsection Visco Plastic
+
+    set Reference temperature = 273 # Not used!
+    set Reference viscosity   = 1e20
+    set Minimum strain rate = 1.e-20
+    set Reference strain rate = 1.e-15
+    set Minimum viscosity = 1e20
+    set Maximum viscosity = 1e26
+
+    set Define thermal conductivities = true
+
+    # Density values at surface (273 K): upper crust (2800), lower crust (2900), 3300 (mantle)
+    # The reference temperature used when adiabatic heating is turned on is the adiabatic surface temperature (1573 K)
+    # To get density values below, divde the values above by (1. - thermal_expansivity * (surface_temperature. - adiabatic_surface temperature)
+    set Densities              = 3216.374269005848, 3216.374269005848, 2729.044834307992, 2826.510721247563, 3216.374269005848
+    set Thermal conductivities = 2.5
+    set Heat capacities        = 750.
+    set Thermal expansivities  = 2e-5
+
+    set Viscosity averaging scheme = harmonic
+    set Viscous flow law = composite
+
+    set Prefactors for dislocation creep          = 6.52e-16,   6.52e-16,   8.57e-28,   7.13e-18,   6.52e-16
+    set Stress exponents for dislocation creep    =      3.5,        3.5,        4.0,        3.0,        3.5
+    set Activation energies for dislocation creep =   530.e3,    530.e3,     223.e3,     345.e3,     530.e3
+    set Activation volumes for dislocation creep  =   18.e-6,     18.e-6,         0.,         0.,     18.e-6
+    
+    set Prefactors for diffusion creep            = 2.37e-15, 1.00e-50, 1.00e-50, 1.00e-50, 1.00e-50
+    set Grain size exponents for diffusion creep  =      3.0,       0.,      0.,       0.,       0.
+    set Activation energies for diffusion creep   =   375.e3,       0.,      0.,       0.,       0.
+    set Activation volumes for diffusion creep    =    2.e-6,      0.,      0.,       0.,       0.
+    
+    set Angles of internal friction = 30.
+    set Cohesions = 20.e6
+
+    set Strain weakening mechanism  = plastic weakening with plastic strain only
+    set Start plasticity strain weakening intervals  = 0.5
+    set End plasticity strain weakening intervals    = 1.5
+    set Cohesion strain weakening factors            = 0.375
+    set Friction strain weakening factors            = 0.375
+
+  end
+end
+
+# Gravity model
+subsection Gravity model
+  set Model name = vertical
+
+  subsection Vertical
+    set Magnitude = 9.81
+  end
+end
+
+
+# Post processing
+subsection Postprocess
+set List of postprocessors = basic statistics, composition statistics, heat flux densities, heat flux statistics, mass flux statistics, material statistics, pressure statistics, temperature statistics, topography, velocity statistics, visualization
+  subsection Visualization
+    set List of output variables      = adiabat, density, heat flux map, named additional outputs, strain rate, viscosity
+    set Time between graphical output = 100.e3
+    set Interpolate output            = false
+    set Write higher order output     = false
+    set Output format                 = vtu
+    set Number of grouped files       = 15
+    set Point-wise stress and strain  = true
+  end
+  subsection Topography
+    set Output to file           = true
+    set Time between text output = 100.e3
+  end
+end
+
+# Checkpointing
+subsection Checkpointing
+  set Steps between checkpoint = 5
+end
+
