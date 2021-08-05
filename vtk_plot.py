@@ -2,12 +2,14 @@
 """
 Functions for plotting data from Paraview
 """
+import os
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
 
-def plot(file,output,field='density',bounds=None,contours=True,
+def plot(file,output,field='density',bounds=None,contours=False,
          cfields=['crust_upper','crust_lower','mantle_lithosphere'],
          null_field='asthenosphere',off_screen=True,
          camera=None,**kwargs):
@@ -37,7 +39,10 @@ def plot(file,output,field='density',bounds=None,contours=True,
     """
     
     mesh = pv.read(file)
-    mesh = mesh.clip_box(bounds=bounds,invert=False)
+    
+    if bounds is not None:
+        mesh = mesh.clip_box(bounds=bounds,invert=False)
+    
     if field=='comp_field':
         mesh = comp_field_vtk(mesh,fields=cfields,null_field=null_field)
     
@@ -126,13 +131,7 @@ def particle_trace(directory,timesteps,point,y_field,x_field='time',
     Get particle paths over time from pvtu files
     """
     # Set up directory building blocks
-    main = directory
-    prefix = 'particles-00'
-    suffix = '.pvtu'
-    
-    # Get file paths for all timesteps
-    timesteps_str = [str(x).zfill(3) for x in timesteps.tolist()]
-    files = [main+'/'+prefix+x+suffix for x in timesteps_str]
+    files=get_pvtu(directory,timesteps)
     
     x_point = []
     y_point = []
@@ -182,5 +181,21 @@ def particle_trace(directory,timesteps,point,y_field,x_field='time',
         
         
     return(point_df)
-        
 
+def get_pvtu(directory,timesteps,kind='solution'):
+    """
+    Get list of .pvtu files from directory and timesteps
+    """    
+    # Set up directory building blocks
+    main = directory
+    if kind=='solution':
+        prefix = 'solution-00'
+    if kind == 'particles':
+        prefix = 'particles-00'
+    suffix = '.pvtu'
+    
+    # Get file paths for all timesteps
+    timesteps_str = [str(x).zfill(3) for x in timesteps.tolist()]
+    files = [os.path.join(main,prefix+x+suffix) for x in timesteps_str]
+
+    return(files)
