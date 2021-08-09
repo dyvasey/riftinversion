@@ -131,7 +131,7 @@ def particle_trace(directory,timesteps,point,y_field,x_field='time',
     Get particle paths over time from pvtu files
     """
     # Set up directory building blocks
-    files=get_pvtu(directory,timesteps)
+    files=get_pvtu(directory,timesteps,kind='particles')
     
     x_point = []
     y_point = []
@@ -142,8 +142,19 @@ def particle_trace(directory,timesteps,point,y_field,x_field='time',
         ids = pv.point_array(mesh,'id') # Get particle ids
         y_vals = pv.point_array(mesh,y_field) # Get y field values
         
-        # Get x field values if not plotting timesteps
-        if x_field!='time':
+        if y_field=='position': # If y array is 3D position
+            x_vals = y_vals[:,0] # Get x coordinates
+            y_vals = y_vals[:,1] # Get y coordinates
+
+            # Rename fields if plotting 2D position
+            if (x_field == 'position') & (y_field == 'position'):
+                x_field = 'x'
+                y_field = 'y' 
+                df = pd.DataFrame(
+                {x_field:x_vals,y_field:y_vals},index=ids.astype(int))
+        
+        # Get x field values if not plotting timesteps or 2D position
+        elif x_field!='time':
             x_vals = pv.point_array(mesh,x_field)
             df = pd.DataFrame(
                 {x_field:x_vals,y_field:y_vals},index=ids.astype(int))
@@ -158,13 +169,26 @@ def particle_trace(directory,timesteps,point,y_field,x_field='time',
             x_point.append(x)
         y_point.append(y)
         
+        # Reset position fields if needed
+        if (x_field == 'x') & (y_field == 'y'):
+            x_field = 'position'
+            y_field = 'position' 
+
+    
     # Convert lists to dataframe
+            
+    # Rename fields if plotting 2D position
+    if (x_field == 'position') & (y_field == 'position'):
+        x_field = 'x'
+        y_field = 'y'
+    
     if x_field!='time':
         point_df = pd.DataFrame({x_field:x_point,y_field:y_point},index=timesteps)
     else:
         point_df = pd.DataFrame({y_field:y_point},index=timesteps)
-    
-    if plot_path is True:
+   
+       
+    if plot_path is True:  
         if x_field!='time':
             point_df.plot(x_field,y_field)
             plt.xlabel(x_field)
@@ -195,7 +219,21 @@ def get_pvtu(directory,timesteps,kind='solution'):
     suffix = '.pvtu'
     
     # Get file paths for all timesteps
-    timesteps_str = [str(x).zfill(3) for x in timesteps.tolist()]
-    files = [os.path.join(main,prefix+x+suffix) for x in timesteps_str]
+    if type(timesteps)==int:
+        timesteps_str = str(timesteps).zfill(3)
+        files = os.path.join(main,prefix+timesteps_str+suffix)
+    else:
+        timesteps_str = [str(x).zfill(3) for x in timesteps.tolist()]
+        files = [os.path.join(main,prefix+x+suffix) for x in timesteps_str]
+    
 
     return(files)
+
+def particle_positions(directory,timestep):
+    # Set up directory building blocks
+    file = get_pvtu(directory,timestep,kind='particles')
+    mesh = pv.read(file)
+    ids = pv.point_array(mesh,'id')
+    positions = pv.point_array(mesh,'position')
+    return(ids,positions)
+    
