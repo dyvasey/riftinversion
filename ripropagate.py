@@ -6,6 +6,7 @@ import os
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 def lthickness(text,lthick):
     """
@@ -162,4 +163,134 @@ def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
         newfile.writelines(contents)
         newfile.close()
     return
+
+def comp_ascii(thicknesses=[20,20,60],x=1000,y=400,resolution=2,
+               rmin=0.5,rmax=1.5,strain_width=250,strain_depth=60,plot=True,
+               cfix=True,wela=False,non_initial=False):
+    """
+    Create composition ASCII file after Naliboff script for ASPECT model
+    
+    Parameters:
+        thicknesses: Thicknesses of upper crust, lower crust, and mantle
+            lithosphere in km.
+        x: Length of model (km)
+        y: Depth of model (km)
+        resolution: Grid resolution (km)
+        rmin: Minimum random strain
+        rmax: Maximum random strain
+        strain_width: Width of zone of plastic strain (km)
+        strain_depth: Depth of zone of plastic strain (km)
+        plot: Whether to plot model setup
+        cfix: Not sure what this does
+        wela: Whether to add 3 additional fields for viscoelastic stresses.
+        non_initial: Whether to add additional field for non-initial plastic
+            strain.
+    """
+    km2m = 1000
+    
+    xmin    = 0
+    xmax    = x*km2m
+    ymin    = 0
+    ymax    = y*km2m
+    
+    gres = resolution*km2m
+    
+    # Plastic strain
+    ep_width = strain_width*km2m
+    ep_depth = strain_depth*km2m
+    xmin_ep = (xmax/2)-(ep_width/2)
+    xmax_ep = (xmax/2)+(ep_width/2)
+    ymax_ep = ymax
+    ymin_ep = ymax-ep_depth
+    
+    # Compositonal layers
+    ymin_cu = ymax - thicknesses[0]*km2m
+    ymin_cl = ymin_cu - thicknesses[1]*km2m
+    ymin_ml = ymin_cl - thicknesses[2]*km2m
+    
+    # Setup of 2D spatial grid
+    xpts = int((xmax - xmin)/gres) + 1
+    ypts = int((ymax - ymin)/gres) + 1
+    #
+    x = np.linspace(xmin,xmax,xpts)
+    y = np.linspace(ymin,ymax,ypts)
+    #
+    xx, yy = np.meshgrid(x,y,indexing='ij')
+    
+    # Array for randomized plastic strain and viscous strain
+    ep = np.zeros([xpts,ypts])
+    
+    # Open outfile for composition data
+    outfile=open('composition.txt','w')
+    outfile.write('# POINTS: %-i %i\n'% (x.size,y.size))
+    
+    # Loop through grid points
+    for i in range(y.size):
+    
+      for j in range(x.size):
+    
+          # Randomized plastic strain is non-zero only in specified regions
+          if x[j]>xmin_ep and x[j]<xmax_ep and y[i]>ymin_ep and y[i]<ymax_ep:
+          
+            if cfix == True:
+              if (np.random.random() < 0.5):
+                ep[j,i] = rmin
+              else:
+                ep[j,i] = rmax
+            else:
+              ep[j,i] = rmin + (np.random.random() * (rmax - rmin))
+          
+          # Write spatial coordinates
+          outfile.write('%-8.3e  ' % (x[j]))
+          outfile.write('%-8.3e  ' % (y[i]))
+    
+          # Write elastic stresses
+          if wela == True:
+              outfile.write('%6.4f  ' % (0.0))
+              outfile.write('%6.4f  ' % (0.0))
+              outfile.write('%6.4f  ' % (0.0))
+    
+          # Write noninitial plastic strain values
+          if non_initial == 'true':
+              outfile.write('%6.4f  ' % (0.0))
+         
+          # Write plastic strain values
+          outfile.write('%6.4f  ' % (ep[j,i]))
+              
+          # Write upper crust values
+          if y[i]>ymin_cu:
+            outfile.write('%6.4f  ' % (1.0))
+          else:
+            outfile.write('%6.4f  ' % (0.0))
+          
+          # Write lower crust values
+          if y[i]<=ymin_cu and y[i]>ymin_cl:
+            outfile.write('%6.4f  ' % (1.0))
+          else:
+            outfile.write('%6.4f  ' % (0.0))
+    
+          # Write lithospheric mantle values
+          if y[i]<=ymin_cl and y[i]>ymin_ml:
+            outfile.write('%6.4f  \n' % (1.0))
+          else:
+            outfile.write('%6.4f  \n' % (0.0))
+    
+    # Close outfile
+    outfile.close()
+    
+    # Plot random plastic strain
+    if plot == True:
+      # Plastic strain
+      fig, ax = plt.subplots()
+      ax.set_aspect('equal')
+      ax.set_title('Initial Plastic Strain', fontsize=14)
+      ax.set_xlim(xmin/1.e3,xmax/1.e3)
+      ax.set_ylim(ymin/1.e3,ymax/1.e3)
+      ax.set_xlabel('Horizontal Position (km)')
+      ax.set_ylabel('Height (km)')
+      ctf = ax.contourf(xx[:,:]/1.e3,yy[:,:]/1.e3,ep[:,:])
+      fig.colorbar(ctf)
+      plt.savefig('initial_plastic_strain.png',dpi=300)
+    
+    
     
