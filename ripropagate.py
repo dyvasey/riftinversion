@@ -185,6 +185,9 @@ def comp_ascii(thicknesses=[20,20,60],x=1000,y=400,resolution=2,
         wela: Whether to add 3 additional fields for viscoelastic stresses.
         non_initial: Whether to add additional field for non-initial plastic
             strain.
+            
+    Returns:
+        None.
     """
     km2m = 1000
     
