@@ -9,31 +9,40 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
 
-def plot(file,output,field='density',bounds=None,contours=False,
+def plot(file,field='density',bounds=None,contours=False,
          cfields=['crust_upper','crust_lower','mantle_lithosphere'],
-         null_field='asthenosphere',off_screen=True,
+         null_field='asthenosphere',off_screen=True,output='img.png',
          camera=None,**kwargs):
     """
     Plot 2D ASPECT results using Pyvista.
+    
+    Best practice is to employ this function twice, once to determine the
+    appropriate camera value with off_screen=False and camera=None, and a
+    second time with off_screen=True and the camera specified. Off_screen=
+    False triggers an interactive window where the camera can be adjusted.
+    Specifying bounds will clip the image and can help ensure that the camera
+    position is correct; some trial and error may be necessary.
 
     Parameters
     ----------
     file : VTU or PVTU file to plot
-    output : Name of image file to output screenshot
     field : Field to use for color. The default is 'density'.
     bounds : Bounds by which to clip the plot. The default is None.
     contours : Boolean for whether to add temperature contours. 
-        The default is True.
+        The default is False.
     cfields : Names of compositional fields to use if field is 'comp_field.' 
         The default is ['crust_upper','crust_lower','mantle_lithosphere'].
     null_field : Null field if field is 'comp_field.'
         The default is 'asthenosphere'.
     off_screen : Boolean for whether Pyvista plotting occurs off-screen.
         The default is True.
-    camera : Position for Pyvista camera. The default is None.
+    output : Name of image file to output screenshot
+    camera : Position for Pyvista camera. Needs to be a list
+        with focal point, position, and viewup. The default is None.
 
     Returns
     -------
+    cpos: Camera position if plotting onscreen [focal point, position,viewup]
     img : img object that can be saved or plotted.
 
     """
@@ -128,7 +137,24 @@ def comp_field_vtk(mesh,fields=['crust_upper','crust_lower','mantle_lithosphere'
 def particle_trace(directory,timesteps,point,y_field,x_field='time',
                    plot_path=False):
     """
-    Get particle paths over time from pvtu files
+    Get single particle path over multiple timesteps from pvtu files.
+    
+    By default, gets values for a single field over time. Can specify a 
+    second field (x_field) to plot two parameters over time.
+    
+    Parameters
+    ----------
+    directory: path to directory with ASPECT pvtu files.
+    timesteps: NumPy array of timesteps to pull
+    point: ID of particle to trace
+    y_field: Particle property for y-axis
+    x_field: Particle property for x-axis. 
+    plot_path: Whether to plot the x-field and y-field
+    
+    Returns
+    -------
+    point_df: Pandas dataframe with timesteps, y-field, and x-field if
+        applicable.
     """
     # Set up directory building blocks
     files=get_pvtu(directory,timesteps,kind='particles')
@@ -208,7 +234,21 @@ def particle_trace(directory,timesteps,point,y_field,x_field='time',
 
 def get_pvtu(directory,timesteps,kind='solution'):
     """
-    Get list of .pvtu files from directory and timesteps
+    Get list of .pvtu files from directory and timesteps.
+    
+    Assumes files are named according to ASPECT output conventions and in a
+    single directory. Can be used for standard solution or particle naming
+    schemes.
+    
+    Parameters
+    ----------
+    directory: Path to directory contaning ASPECT pvtu files.
+    timesteps: Integer or NumPy array of timesteps to pull
+    kind: Whether to pull standard solution or particles.
+    
+    Returns
+    -------
+    files: List of file paths
     """    
     # Set up directory building blocks
     main = directory
@@ -230,7 +270,20 @@ def get_pvtu(directory,timesteps,kind='solution'):
     return(files)
 
 def particle_positions(directory,timestep):
-    # Set up directory building blocks
+    """
+    Get ids and positions of all particles in a particular timestep.
+    
+    Parameters
+    ----------
+    directory: Path to directory containing ASPECT pvtu files.
+    timestep: Timestep from which to pull positions.
+    
+    Returns
+    -------
+    ids: NumPy array of particle ids
+    positions: NumPy array of particle positions (X,Y,Z)
+    """
+
     file = get_pvtu(directory,timestep,kind='particles')
     mesh = pv.read(file)
     ids = pv.point_array(mesh,'id')
