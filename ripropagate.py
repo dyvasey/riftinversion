@@ -166,7 +166,7 @@ def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
 
 def comp_ascii(thicknesses=[20,20,60],x=1000,y=400,resolution=2,
                rmin=0.5,rmax=1.5,strain_width=250,strain_depth=60,plot=True,
-               cfix=True,wela=False,non_initial=False):
+               cfix=True,wela=False,non_initial=False,output='.'):
     """
     Create composition ASCII file after Naliboff script for ASPECT model
     
@@ -224,7 +224,8 @@ def comp_ascii(thicknesses=[20,20,60],x=1000,y=400,resolution=2,
     ep = np.zeros([xpts,ypts])
     
     # Open outfile for composition data
-    outfile=open('composition.txt','w')
+    path = os.path.join(output,'composition.txt')
+    outfile=open(path,'w')
     outfile.write('# POINTS: %-i %i\n'% (x.size,y.size))
     
     # Loop through grid points
@@ -293,7 +294,6 @@ def comp_ascii(thicknesses=[20,20,60],x=1000,y=400,resolution=2,
       ax.set_ylabel('Height (km)')
       ctf = ax.contourf(xx[:,:]/1.e3,yy[:,:]/1.e3,ep[:,:])
       fig.colorbar(ctf)
-      plt.savefig('initial_plastic_strain.png',dpi=300)
     
     
     
