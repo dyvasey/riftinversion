@@ -234,8 +234,8 @@ subsection Material model
     set Strain weakening mechanism  = plastic weakening with plastic strain only
     set Start plasticity strain weakening intervals  = 0.5
     set End plasticity strain weakening intervals    = 1.5
-    set Cohesion strain weakening factors            = 0.375
-    set Friction strain weakening factors            = 0.375
+    set Cohesion strain weakening factors            = XXX
+    set Friction strain weakening factors            = XXX
 
   end
 end

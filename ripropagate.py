@@ -78,7 +78,7 @@ def time(text,time):
         text: Altered prm string
     """
     
-    base = 'XXX' # Dummy value in in base file
+    base = 'XXX' # Dummy value in base file
     
     old = 'set End time                                   = '+base
     new = 'set End time                                   = '+str(time)+'e6'
@@ -102,7 +102,28 @@ def version(text,ver):
     text = text.replace(old,new)    
     return(text)
 
-def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
+def strain_softening(text,value):
+    """
+    Set value for strain softening.
+    """
+    
+    base = 'XXX' # Dummy value in base file
+    
+    # Cohesion
+    old_cohesion = 'set Cohesion strain weakening factors            = '+base
+    new_cohesion = 'set Cohesion strain weakening factors            = '+str(value)
+    
+    text = text.replace(old_cohesion,new_cohesion)
+    
+    # Friction
+    old_friction = 'set Friction strain weakening factors            = '+base
+    new_friction = 'set Friction strain weakening factors            = '+str(value)
+    
+    text = text.replace(old_friction,new_friction)
+    
+    return(text)
+    
+def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,soft=0.333,output='.',
              shell='run_base.sh',ver=''):
     """
     Generate .prm file from dummy base file.
@@ -116,6 +137,7 @@ def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
         lthick: Lithosphere thickness (km)
         evel: Total extension velocity (cm)
         etime: Total model time (Myr)
+        soft: Strain softening factor
         output: Directory to place generated file
         shell: Name of base shell script for Stampede2 to generate
         version: Version letter to add to Stampede2 job name
@@ -128,8 +150,10 @@ def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
     vel_str = vel_str.replace('.','-') # Make sure no decimals
     time_str = str(etime)+'Myr' # String version of time
     time_str = time_str.replace('.','-') # Make sure no decimals
+    soft_str = str(round(soft*30))
+    soft_str = soft_str.replace('.','-')
     
-    fullstring = vel_str+'_'+lthick_str+'_'+time_str
+    fullstring = vel_str+'_'+lthick_str+'_'+time_str+'_'+soft_str
     
     path = os.path.join('.',file) # Join root to filename
     newname = file.replace('base',fullstring) # Change file name
@@ -142,6 +166,7 @@ def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,output='.',
         contents = lthickness(contents,lthick)
         contents = evelocity(contents,evel)
         contents = time(contents,etime)
+        contents = strain_softening(contents,soft)
         if 'XXX' in contents:
             print('WARNING: PRM generated contains XXX') 
         newpath = os.path.join(output,newname)
