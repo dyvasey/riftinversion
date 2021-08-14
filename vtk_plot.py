@@ -165,8 +165,13 @@ def particle_trace(meshes,timesteps,point,y_field,x_field='time',
     x_point = []
     y_point = []
     
+    # Get first and last values of timesteps
+    first = timesteps[0]
+    last = timesteps[-1]
+    
     # Loop over files
-    for mesh in meshes:
+    
+    for mesh in meshes[first:last+1]:
         
         # Clip mesh if needed
         if bounds is not None:
@@ -291,7 +296,7 @@ def particle_positions(meshes,timestep,bounds=None):
     positions: NumPy array of particle positions (X,Y,Z)
     """
 
-    mesh = meshes[str(timestep)]
+    mesh = meshes[timestep]
     
     if bounds is not None:
         mesh = mesh.clip_box(bounds=bounds,invert=False)
@@ -316,16 +321,14 @@ def load_particle_meshes(directory,timesteps,filename='meshes.vtm',bounds=None):
     # Setup multiblock
     meshes = pv.MultiBlock()
     
-    for n,file in enumerate(tqdm(files)):
+    for file in tqdm(files):
         mesh = pv.read(file) # Major computation to load this.
     
         # Clip mesh to save space
         if bounds is not None:
             mesh = mesh.clip_box(bounds=bounds,invert=False)
         
-        step =str(timesteps[n])
-        
-        meshes[step] = mesh
+        meshes.append(mesh)
         
     # Save clipped meshes as smaller file to work with
     meshes.save(filename)
