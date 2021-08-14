@@ -3,11 +3,13 @@
 Functions for plotting data from Paraview
 """
 import os
+from datetime import datetime
 
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
+from tqdm import tqdm
 
 def plot(file,field='density',bounds=None,contours=False,
          cfields=['crust_upper','crust_lower','mantle_lithosphere'],
@@ -134,21 +136,24 @@ def comp_field_vtk(mesh,fields=['crust_upper','crust_lower','mantle_lithosphere'
     mesh.point_arrays['comp_field'] = output
     return(mesh)
 
-def particle_trace(directory,timesteps,point,y_field,x_field='time',
-                   plot_path=False):
+def particle_trace(meshes,timesteps,point,y_field,x_field='time',
+                   bounds=None,plot_path=False):
     """
-    Get single particle path over multiple timesteps from pvtu files.
+    Get single particle path over multiple timesteps from meshes generated
+    by load_particle_meshes.
     
     By default, gets values for a single field over time. Can specify a 
     second field (x_field) to plot two parameters over time.
     
     Parameters
     ----------
-    directory: path to directory with ASPECT pvtu files.
+    meshes: MultiBlock object from laod_particle_meshes function
     timesteps: NumPy array of timesteps to pull
     point: ID of particle to trace
     y_field: Particle property for y-axis
-    x_field: Particle property for x-axis. 
+    x_field: Particle property for x-axis.
+    bounds: List of bounds to clip model [xmin,xmax,ymin,ymax,zmin,zmax].
+        Note that 0 indicates bottom
     plot_path: Whether to plot the x-field and y-field
     
     Returns
@@ -156,15 +161,17 @@ def particle_trace(directory,timesteps,point,y_field,x_field='time',
     point_df: Pandas dataframe with timesteps, y-field, and x-field if
         applicable.
     """
-    # Set up directory building blocks
-    files=get_pvtu(directory,timesteps,kind='particles')
     
     x_point = []
     y_point = []
     
     # Loop over files
-    for n in range(len(files)):
-        mesh = pv.read(files[n]) # Get mesh
+    for mesh in meshes:
+        
+        # Clip mesh if needed
+        if bounds is not None:
+            mesh = mesh.clip_box(bounds=bounds,invert=False)
+        
         ids = pv.point_array(mesh,'id') # Get particle ids
         y_vals = pv.point_array(mesh,y_field) # Get y field values
         
@@ -269,13 +276,13 @@ def get_pvtu(directory,timesteps,kind='solution'):
 
     return(files)
 
-def particle_positions(directory,timestep):
+def particle_positions(meshes,timestep,bounds=None):
     """
     Get ids and positions of all particles in a particular timestep.
     
     Parameters
     ----------
-    directory: Path to directory containing ASPECT pvtu files.
+    meshes: MultiBlock object from load_particle_meshes
     timestep: Timestep from which to pull positions.
     
     Returns
@@ -284,9 +291,49 @@ def particle_positions(directory,timestep):
     positions: NumPy array of particle positions (X,Y,Z)
     """
 
-    file = get_pvtu(directory,timestep,kind='particles')
-    mesh = pv.read(file)
+    mesh = meshes[str(timestep)]
+    
+    if bounds is not None:
+        mesh = mesh.clip_box(bounds=bounds,invert=False)
+    
     ids = pv.point_array(mesh,'id')
     positions = pv.point_array(mesh,'position')
     return(ids,positions)
+
+def load_particle_meshes(directory,timesteps,filename='meshes.vtm',bounds=None):
+    """
+    Load particle meshes, clip, and save to avoid duplicate computation. This is
+    computationally intensive for large meshes and may be preferred to do on 
+    Stampede2.
+    """
     
+    # Set timer for computation
+    startTime = datetime.now()
+    
+    # Set up directory building blocks
+    files=get_pvtu(directory,timesteps,kind='particles')
+    
+    # Setup multiblock
+    meshes = pv.MultiBlock()
+    
+    for n,file in enumerate(tqdm(files)):
+        mesh = pv.read(file) # Major computation to load this.
+    
+        # Clip mesh to save space
+        if bounds is not None:
+            mesh = mesh.clip_box(bounds=bounds,invert=False)
+        
+        step =str(timesteps[n])
+        
+        meshes[step] = mesh
+        
+    # Save clipped meshes as smaller file to work with
+    meshes.save(filename)
+    
+    # Print computation time
+    print(datetime.now()-startTime)
+    
+    return(meshes)
+        
+        
+        
