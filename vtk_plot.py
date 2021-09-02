@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Functions for plotting data from Paraview
+Functions for plotting data from VTU/PVTU files.
 """
 import os
 from datetime import datetime
@@ -74,7 +74,6 @@ def plot(file,field='density',bounds=None,contours=False,
     plotter.window_size = 1200,660
     if camera is not None:
         plotter.camera_position = camera
-        print('hey ya')
         plotter.camera_set = True
     if off_screen==False:
         cpos = plotter.show(screenshot='output')
@@ -310,6 +309,17 @@ def load_particle_meshes(directory,timesteps,filename='meshes.vtm',bounds=None):
     Load particle meshes, clip, and save to avoid duplicate computation. This is
     computationally intensive for large meshes and may be preferred to do on 
     Stampede2.
+    
+    Parameters
+    ----------
+    directory: Path to directory contaning ASPECT pvtu files.
+    timesteps: Integer or NumPy array of timesteps to pull.
+    filename: Name of file to save clipped meshes to.
+    bounds: Bounds by which to clip the model box
+    
+    Returns
+    -------
+    meshes: MultiBlock object of clipped meshes for each timestep.
     """
     
     # Set timer for computation
