@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Functions for plotting data from VTU/PVTU files.
 """
