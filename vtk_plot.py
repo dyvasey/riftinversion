@@ -35,6 +35,11 @@ def plot2D(file,field,bounds,ax=None,contours=False,
     
     mesh = pv.read(file)
     
+    km2m = 1000
+    bounds_m = [bound*km2m for bound in bounds] # Convert bounds to m
+    bounds_3D = bounds_m + [0,0]
+    mesh = mesh.clip_box(bounds=bounds_3D,invert=False)
+    
     if field=='comp_field':
         mesh = comp_field_vtk(mesh,fields=cfields,null_field=null_field)
     
@@ -52,14 +57,17 @@ def plot2D(file,field,bounds,ax=None,contours=False,
     plotter.view_xy()
     plotter.remove_scalar_bar()
 
-    plotter.window_size = 1200,660
-
     # Calculate Camera Position from Bounds
-    km2m = 1000
-    bounds_m = np.array(bounds)*km2m # Make array and convert to m
-    xmid = abs(bounds_m[1] - bounds_m[0])/2 # X midpoint
-    ymid = abs(bounds_m[3] - bounds_m[2])/2 # Y midpoint
-    zoom = abs(bounds_m[1] - bounds_m[0]) # Zoom level
+    bounds_array = np.array(bounds_m)
+    xmag = float(abs(bounds_array[1] - bounds_array[0]))
+    ymag = float(abs(bounds_array[3] - bounds_array[2]))
+    aspect_ratio = ymag/xmag
+  
+    plotter.window_size = (1024,int(1024*aspect_ratio))
+    
+    xmid = xmag/2 + bounds_array[0] # X midpoint
+    ymid = ymag/2 + bounds_array[2] # Y midpoint
+    zoom = xmag*aspect_ratio*1.875 # Zoom level - not sure why 1.875 works
     
     position = (xmid,ymid,zoom)
     focal_point = (xmid,ymid,0)
