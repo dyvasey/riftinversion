@@ -10,12 +10,85 @@ import numpy as np
 import pyvista as pv
 from tqdm import tqdm
 
-def plot(file,field='density',bounds=None,contours=False,
+def plot2D(file,field,bounds,ax=None,contours=False,
+         cfields=['crust_upper','crust_lower','mantle_lithosphere'],
+         null_field='asthenosphere',**kwargs):
+    """
+    Plot 2D ASPECT results using Pyvista.
+
+    Parameters
+    ----------
+    file : VTU or PVTU file to plot
+    field : Field to use for color.
+    bounds : List of bounds by which to clip the plot.
+    contours : Boolean for whether to add temperature contours. 
+        The default is False.
+    cfields : Names of compositional fields to use if field is 'comp_field.' 
+        The default is ['crust_upper','crust_lower','mantle_lithosphere'].
+    null_field : Null field if field is 'comp_field.'
+        The default is 'asthenosphere'.
+
+    Returns
+    -------
+
+    """
+    
+    mesh = pv.read(file)
+    
+    if field=='comp_field':
+        mesh = comp_field_vtk(mesh,fields=cfields,null_field=null_field)
+    
+    if contours==True:
+        cntrs = add_contours(mesh)
+    
+    pv.set_plot_theme("document")
+    plotter = pv.Plotter(off_screen=True)
+    
+    plotter.add_mesh(mesh,scalars=field,**kwargs)
+    
+    if contours ==True:
+        plotter.add_mesh(cntrs,color='black',line_width=5)
+    
+    plotter.view_xy()
+    plotter.remove_scalar_bar()
+
+    plotter.window_size = 1200,660
+
+    # Calculate Camera Position from Bounds
+    km2m = 1000
+    bounds_m = np.array(bounds)*km2m # Make array and convert to m
+    xmid = abs(bounds_m[1] - bounds_m[0])/2 # X midpoint
+    ymid = abs(bounds_m[3] - bounds_m[2])/2 # Y midpoint
+    zoom = abs(bounds_m[1] - bounds_m[0]) # Zoom level
+    
+    position = (xmid,ymid,zoom)
+    focal_point = (xmid,ymid,0)
+    viewup = (0,1,0)
+    
+    camera = [position,focal_point,viewup]
+    print(camera)
+    
+    plotter.camera_position = camera
+    plotter.camera_set = True
+    
+    # Create image
+    img = plotter.screenshot(transparent_background=True,
+                             return_img=True)
+    
+    # Plot using imshow
+    if ax is None:
+        ax = plt.gca()
+    
+    ax.imshow(img,aspect='equal',extent=bounds)
+    
+    return(ax)
+
+def plot_manual(file,field='density',bounds=None,contours=False,
          cfields=['crust_upper','crust_lower','mantle_lithosphere'],
          null_field='asthenosphere',off_screen=True,output='img.png',
          camera=None,**kwargs):
     """
-    Plot 2D ASPECT results using Pyvista.
+    Plot 2D ASPECT results using Pyvista. This function is deprecated.
     
     Best practice is to employ this function twice, once to determine the
     appropriate camera value with off_screen=False and camera=None, and a
