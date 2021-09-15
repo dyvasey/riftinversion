@@ -395,7 +395,7 @@ def load_particle_meshes(directory,timesteps,filename='meshes.vtm',bounds=None):
     directory: Path to directory contaning ASPECT pvtu files.
     timesteps: Integer or NumPy array of timesteps to pull.
     filename: Name of file to save clipped meshes to.
-    bounds: Bounds by which to clip the model box
+    bounds: Bounds by which to clip the model box (km)
     
     Returns
     -------
@@ -416,7 +416,9 @@ def load_particle_meshes(directory,timesteps,filename='meshes.vtm',bounds=None):
     
         # Clip mesh to save space
         if bounds is not None:
-            mesh = mesh.clip_box(bounds=bounds,invert=False)
+            km2m = 1000
+            bounds_m = [bound*km2m for bound in bounds]
+            mesh = mesh.clip_box(bounds=bounds_m,invert=False)
         
         meshes.append(mesh)
         
