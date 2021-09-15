@@ -13,7 +13,7 @@ set Maximum time step                          = 5e3
 set Output directory                           = output_ri_rift
 set Timing output frequency                    = 1
 set Pressure normalization                     = no
-set Adiabatic surface temperature              = 1573
+set Adiabatic surface temperature              = 1573    
 
 # Governing equations
 subsection Formulation
