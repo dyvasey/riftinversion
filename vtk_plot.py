@@ -216,7 +216,7 @@ def comp_field_vtk(mesh,fields=['crust_upper','crust_lower','mantle_lithosphere'
     return(mesh)
 
 def particle_trace(meshes,timesteps,point,y_field,x_field='time',
-                   bounds=None,plot_path=False):
+                   plot_path=False):
     """
     Get single particle path over multiple timesteps from meshes generated
     by load_particle_meshes.
@@ -250,11 +250,7 @@ def particle_trace(meshes,timesteps,point,y_field,x_field='time',
     
     # Loop over files
     
-    for mesh in meshes[first:last+1]:
-        
-        # Clip mesh if needed
-        if bounds is not None:
-            mesh = mesh.clip_box(bounds=bounds,invert=False)
+    for k,mesh in enumerate(tqdm(meshes[first:last+1])):
         
         ids = pv.point_array(mesh,'id') # Get particle ids
         y_vals = pv.point_array(mesh,y_field) # Get y field values
@@ -289,7 +285,7 @@ def particle_trace(meshes,timesteps,point,y_field,x_field='time',
         # Reset position fields if needed
         if (x_field == 'x') & (y_field == 'y'):
             x_field = 'position'
-            y_field = 'position' 
+            y_field = 'position'
 
     
     # Convert lists to dataframe
@@ -382,7 +378,8 @@ def particle_positions(meshes,timestep,bounds=None):
     
     ids = pv.point_array(mesh,'id')
     positions = pv.point_array(mesh,'position')
-    return(ids,positions)
+    df = pd.DataFrame(data=positions,index=ids)
+    return(df)
 
 def load_particle_meshes(directory,timesteps,filename='meshes.vtm',bounds=None):
     """
@@ -429,6 +426,16 @@ def load_particle_meshes(directory,timesteps,filename='meshes.vtm',bounds=None):
     print(datetime.now()-startTime)
     
     return(meshes)
+
+def allmeshes_particles(meshes):
+    """
+    Get particle ids for particles that occur in all of a set of meshes
+    """
+    all_particles = pv.point_array(meshes[0],'id')
+    
+    for mesh in tqdm(meshes[1:-1]):
+        mesh_particles = pv.point_array(mesh,'id')
+        common_particles = np.intersect1d(all_particles,mesh_particles)
+        all_particles = common_particles
         
-        
-        
+    return(all_particles)
