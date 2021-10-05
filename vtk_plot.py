@@ -430,6 +430,14 @@ def load_particle_meshes(directory,timesteps,filename='meshes.vtm',bounds=None):
 def allmeshes_particles(meshes):
     """
     Get particle ids for particles that occur in all of a set of meshes
+    
+    Parameters
+    ----------
+    meshes: MultiBlock object of meshes
+    
+    Returns
+    -------
+    all_particles: NumPy array of all particles that occur in all input meshes.
     """
     all_particles = pv.point_array(meshes[0],'id')
     
