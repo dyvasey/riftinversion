@@ -207,12 +207,12 @@ def comp_field_vtk(mesh,fields=['crust_upper','crust_lower','mantle_lithosphere'
     """
 
     # Create empty np array
-    output = np.zeros(shape=mesh.point_arrays[fields[0]].shape)
+    output = np.zeros(shape=mesh.point_data[fields[0]].shape)
     for x in range(len(fields)):
-        array = mesh.point_arrays[fields[x]]
+        array = mesh.point_data[fields[x]]
         output = np.where(array>0.5,x+1,output)
     
-    mesh.point_arrays['comp_field'] = output
+    mesh.point_data['comp_field'] = output
     return(mesh)
 
 def particle_trace(meshes,timesteps,point,y_field,x_field='time',
