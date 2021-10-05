@@ -74,7 +74,7 @@ def plot2D(file,field,bounds,ax=None,contours=False,
     viewup = (0,1,0)
     
     camera = [position,focal_point,viewup]
-    print(camera)
+    # print(camera)
     
     plotter.camera_position = camera
     plotter.camera_set = True
