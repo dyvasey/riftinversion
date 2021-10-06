@@ -46,21 +46,18 @@ subsection Geometry model
   end
 end
 
-# Globally refine to 1 km spacing
+# Globally refine to 2 km spacing, 1 km above 200 km
 subsection Mesh refinement
-  set Initial global refinement          = 0
-  set Initial adaptive refinement        = 2
+  set Initial global refinement          = 1
+  set Initial adaptive refinement        = 1
   set Time steps between mesh refinement = 1
   
-  set Strategy = isosurfaces, minimum refinement function
-  subsection Isosurfaces
-    set Isosurfaces = 2,2,  Temperature: 273|1573
-  end
+  set Strategy = minimum refinement function
   
-   subsection Minimum refinement function
+  subsection Minimum refinement function
     set Coordinate system   = cartesian
     set Variable names      = x,y
-    set Function expression = if( y>=200.e3 ,1 , 0 )
+    set Function expression = if( y>=200.e3 ,2 , 1 )
   end
 end
 

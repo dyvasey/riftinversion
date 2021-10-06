@@ -48,9 +48,17 @@ end
 
 # Globally refine to 1 km spacing
 subsection Mesh refinement
-  set Initial global refinement          = 2
-  set Initial adaptive refinement        = 0
-  set Time steps between mesh refinement = 0
+  set Initial global refinement          = 1
+  set Initial adaptive refinement        = 1
+  set Time steps between mesh refinement = 1
+  
+  set Strategy = minimum refinement function
+  
+  subsection Minimum refinement function
+    set Coordinate system   = cartesian
+    set Variable names      = x,y
+    set Function expression = if( y>=200.e3 ,2 , 1 )
+  end
 end
 
 # Q2Q1 Element
@@ -255,11 +263,11 @@ subsection Postprocess
 set List of postprocessors = basic statistics, composition statistics, heat flux densities, heat flux statistics, mass flux statistics, material statistics, pressure statistics, temperature statistics, topography, velocity statistics, visualization, particles, particle count statistics
   subsection Particles
     set Number of particles = 3e6
-    set Minimum particles per cell  = 25
-    set Maximum particles per cell  = 35
+    set Minimum particles per cell  = 10
+    set Maximum particles per cell  = 40
     set Load balancing strategy     = remove and add particles
     set List of particle properties = initial composition, viscoplastic strain invariants, pT path, position
-    set Interpolation scheme        = cell average
+    set Interpolation scheme        = bilinear least squares
     set Update ghost particles      = true
     set Particle generator name     = random uniform
     set Time between data output    = 100.e3
