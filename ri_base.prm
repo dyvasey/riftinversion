@@ -46,7 +46,7 @@ subsection Geometry model
   end
 end
 
-# Globally refine to 1 km spacing
+# Globally refine to 2 km spacing, 1 km above 200 km
 subsection Mesh refinement
   set Initial global refinement          = 1
   set Initial adaptive refinement        = 1
