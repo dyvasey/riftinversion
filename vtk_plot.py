@@ -356,6 +356,20 @@ def get_pvtu(directory,timesteps,kind='solution'):
 
     return(files)
 
+def get_topography(directory,timesteps):
+    main = directory
+    prefix = 'topography.0'
+    suffix = '00'
+    
+    if type(timesteps)==int:
+        timesteps_str = str(int(timesteps/5)).zfill(2)
+        files = os.path.join(main,prefix+timesteps_str+suffix)
+    else:
+        timesteps_str = [str(x/5).zfill(2) for x in timesteps.tolist()]
+        files = [os.path.join(main,prefix + x + suffix) for x in timesteps_str]
+        
+    return(files)
+
 def particle_positions(meshes,timestep,bounds=None):
     """
     Get ids and positions of all particles in a particular timestep.
@@ -447,3 +461,59 @@ def allmeshes_particles(meshes):
         all_particles = common_particles
         
     return(all_particles)
+
+def get_surface_particles(mesh,topography,buffer=100):
+    """
+    Get particle ids for particles that are at the surface for a given timestep
+    
+    Parameters
+    ----------
+    mesh: Pyvista mesh
+    topography: Directory pointing to topography file
+    buffer: Number of meters below surface to include
+    
+    Returns
+    -------
+    all_particles: NumPy array of all particles that occur in all input meshes.
+    """
+    points = mesh.points
+    ids = mesh.point_data['id']
+    
+    topo = pd.read_csv(topography,delimiter=' ',header=None,skiprows=1)
+    
+    surface_ids = []
+    positions = []
+    for k,point in enumerate(tqdm(points)):
+        part_id = ids[k]
+        topo_point = np.interp(point[0],topo[0],topo[1])
+        if point[1]>=(topo_point-buffer):
+            surface_ids.append(part_id)
+            positions.append(point)
+    df = pd.DataFrame(positions,index=surface_ids,columns=['X','Y','Z'])
+    
+    return(df)
+
+def surface_all_timesteps(meshes,end_mesh,topography,buffer=100):
+    """
+    Get particle ids for particles that are at the surface for a given mesh
+    and are present in all meshes.
+    
+    Parameters
+    ----------
+    meshes: MultiBlock object of meshes
+    end_mesh: Mesh to use for surface
+    topography: Directory pointing to topography file
+    buffer: Number of meters below surface to include
+    
+    Returns
+    -------
+    surface_all_time: NumPy array of all particles at surfae and in all meshes.
+    """
+    particles = allmeshes_particles(meshes)
+    surface_particles = get_surface_particles(end_mesh,topography,buffer).index
+    surface_all_time = np.intersect1d(particles,surface_particles)
+    
+    return(surface_all_time)
+        
+    
+    
