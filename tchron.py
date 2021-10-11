@@ -60,9 +60,14 @@ def get_parameters(system='AHe'):
         # Activation Energy (J*mol^-1)
         activ_energy=183000
     
-    stopping_distances = np.array([R_238U,R_235U,R_232Th])
+    else:
+        raise Exception('Isotopic System Not Found')
     
-    return(freq_factor,activ_energy,stopping_distances)
+    if system == ('AHe' or 'ZHe'):
+        stopping_distances = np.array([R_238U,R_235U,R_232Th])
+        return(freq_factor,activ_energy,stopping_distances)
+    else:
+        return(freq_factor,activ_energy)
 
 def calculate_diffusivity(T,freq_factor,activ_energy,R=8.3144598):
     kappa = freq_factor*np.exp(-activ_energy/(R*T))
@@ -132,7 +137,7 @@ def calculate_age(He_molg,U238_molg,U235_molg,Th_molg):
     
         return(root)
     
-    age = fsolve(age_equation,1e6)
+    age = float(fsolve(age_equation,1e6))
     age_Ma = age/1e6
     
     return(age_Ma)
@@ -151,8 +156,6 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=500):
     node_spacing = radius/nodes
     print('Node Spacing (microns): ',node_spacing)
     
-    temps_k = temps+273
-    
     # Get parameters for the appropriate mineral
     freq_factor,activ_energy,stop_distances = get_parameters(system)
     
@@ -165,7 +168,7 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=500):
     
     # Loop through each step of the T-t path
     
-    for k,temp in enumerate(temps_k):
+    for k,temp in enumerate(temps):
         
         # Use temperature to calculate diffusivity and beta
         
