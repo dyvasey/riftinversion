@@ -18,9 +18,15 @@ def tridiag(a, b, c, diag_length):
 def get_parameters(mineral='apatite'):
     if mineral == 'apatite':
         # Frequency Factor(um^2*yr^-1)
-        freq_factor=5000000000*3.154e7;
+        freq_factor=50e8*3.154e7;
         # Activation Energy (J*mol^-1)
         activ_energy=138000
+        
+    if mineral == 'zircon':
+        # Frequency Factor(um^2*yr^-1)
+        freq_factor=0.46e8*3.154e7;
+        # Activation Energy (J*mol^-1)
+        activ_energy=169000
     
     return(freq_factor,activ_energy)
 
