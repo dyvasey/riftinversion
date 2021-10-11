@@ -65,41 +65,45 @@ def initial_conditions(node_spacing,nodes,time_interval,He_production,beta):
     
     return(A_initial,B_initial,node_positions)
 
-def calculate_age(x,node_positions,U238_molg,U235_molg,Th_molg):
-    lambda238 = -np.log(1/2)/4.468e9
-    lambda235 = -np.log(1/2)/7.04e8
-    lambda232 = -np.log(1/2)/1.40e10
-    
+def sum_He(x,node_positions):
     volumes = x/node_positions
     He_molg = np.sum(volumes)
     He_nccg = He_molg * 22.4e12
     
-    print(He_nccg)
+    print('He (ncc/g): ',He_nccg)
+
+    return(He_molg)
+
+def calculate_age(He_molg,U238_molg,U235_molg,Th_molg):
+    lambda238 = -np.log(1/2)/4.468e9
+    lambda235 = -np.log(1/2)/7.04e8
+    lambda232 = -np.log(1/2)/1.40e10
     
     ageterm_238 = 8*U238_molg
     ageterm_235 = 7*U235_molg
     ageterm_232 = 6*Th_molg
     
     def age_equation(t):
-        He_molg = (
-            ageterm_238*np.exp(lambda238*t) + ageterm_235*np.exp(lambda235*t)
-            + ageterm_232*np.exp(lambda232*t)-1
-            )
-        
-        return(He_molg)
+        root = (
+            ageterm_238*(np.exp(lambda238*t)-1)
+            + ageterm_235*(np.exp(lambda235*t)-1)
+            + ageterm_232*(np.exp(lambda232*t)-1) - He_molg
+            ) 
+    
+        return(root)
     
     age = fsolve(age_equation,1e6)
     age_Ma = age/1e6
     
     return(age_Ma)
 
-def forward_model(U,Th,radius,temps,times,mineral='apatite',nodes=100):
+def forward_model(U,Th,radius,temps,time_interval,mineral='apatite',nodes=100):
     
     # Find node spacing and time interval based on radius and T-t path
     node_spacing = radius/nodes
-    print(node_spacing)
-    time_interval = ((np.max(times)-np.min(times))/(len(times)-1))*1e6
-    print(time_interval)
+    print('Node Spacing: ',node_spacing)
+    
+    temps_k = temps+273
     
     # Get parameters for the appropriate mineral
     freq_factor,activ_energy = get_parameters(mineral)
@@ -110,7 +114,7 @@ def forward_model(U,Th,radius,temps,times,mineral='apatite',nodes=100):
     
     # Loop through each step of the T-t path
     
-    for k,temp in enumerate(temps):
+    for k,temp in enumerate(temps_k):
         
         # Use temperature to calculate diffusivity and beta
         
@@ -154,7 +158,9 @@ def forward_model(U,Th,radius,temps,times,mineral='apatite',nodes=100):
 
         x = np.linalg.solve(A,B)
         
-    age = calculate_age(x, node_positions,U238_molg,U235_molg,Th_molg)
+    He_molg = sum_He(x,node_positions)
+    
+    age = calculate_age(He_molg,U238_molg,U235_molg,Th_molg)
     
     return(age)
         
