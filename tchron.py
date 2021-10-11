@@ -15,20 +15,54 @@ def tridiag(a, b, c, diag_length):
     
     return(tridiag_matrix) 
 
-def get_parameters(mineral='apatite'):
-    if mineral == 'apatite':
+def get_parameters(system='AHe'):
+    if system == 'AHe':
         # Frequency Factor(um^2*yr^-1)
         freq_factor=50e8*3.154e7;
         # Activation Energy (J*mol^-1)
         activ_energy=138000
+        # Stopping Distances (um)
+        R_238U = 18.81
+        R_235U = 21.80
+        R_232Th = 22.25
         
-    if mineral == 'zircon':
+    elif system == 'ZHe':
         # Frequency Factor(um^2*yr^-1)
         freq_factor=0.46e8*3.154e7;
         # Activation Energy (J*mol^-1)
         activ_energy=169000
+        # Stopping Distances (um)
+        R_238U = 15.55
+        R_235U = 18.05
+        R_232Th = 18.43
     
-    return(freq_factor,activ_energy)
+    elif system == 'BtAr':
+        # Frequency Factor(um^2*yr^-1)
+        freq_factor=7.5e-2*1e8*3.154e7;
+        # Activation Energy (J*mol^-1)
+        activ_energy=197000
+    
+    elif system == 'MsAr':
+        # Frequency Factor(um^2*yr^-1)
+        freq_factor=9.8e-3*1e8*3.154e7;
+        # Activation Energy (J*mol^-1)
+        activ_energy=18000
+    
+    elif system == 'HbAr':
+        # Frequency Factor(um^2*yr^-1)
+        freq_factor=6e-2*1e8*3.154e7;
+        # Activation Energy (J*mol^-1)
+        activ_energy=268000
+    
+    elif system == 'KsAr':
+        # Frequency Factor(um^2*yr^-1)
+        freq_factor=9.8e-3*1e8*3.154e7;
+        # Activation Energy (J*mol^-1)
+        activ_energy=183000
+    
+    stopping_distances = np.array([R_238U,R_235U,R_232Th])
+    
+    return(freq_factor,activ_energy,stopping_distances)
 
 def calculate_diffusivity(T,freq_factor,activ_energy,R=8.3144598):
     kappa = freq_factor*np.exp(-activ_energy/(R*T))
@@ -103,16 +137,27 @@ def calculate_age(He_molg,U238_molg,U235_molg,Th_molg):
     
     return(age_Ma)
 
-def forward_model(U,Th,radius,temps,time_interval,mineral='apatite',nodes=100):
+def alpha_correction(stopping_distance,radius):
+    volume = (4/3) * np.pi * radius**3
+    surface_area = 4 * np.pi * radius**2
+    
+    tau = 1 - 0.25*((surface_area*stopping_distance)/volume)
+    
+    return(tau)
+
+def forward_model(U,Th,radius,temps,time_interval,system,nodes=500):
     
     # Find node spacing and time interval based on radius and T-t path
     node_spacing = radius/nodes
-    print('Node Spacing: ',node_spacing)
+    print('Node Spacing (microns): ',node_spacing)
     
     temps_k = temps+273
     
     # Get parameters for the appropriate mineral
-    freq_factor,activ_energy = get_parameters(mineral)
+    freq_factor,activ_energy,stop_distances = get_parameters(system)
+    
+    # Get array of correction values (238,235,232)
+    tau = alpha_correction(stop_distances,radius)
     
     # Calculate He production based on U and Th
     U238_molg,U235_molg,Th_molg = UTh_ppm2molg(U,Th)
@@ -166,9 +211,19 @@ def forward_model(U,Th,radius,temps,time_interval,mineral='apatite',nodes=100):
         
     He_molg = sum_He(x,node_positions)
     
-    age = calculate_age(He_molg,U238_molg,U235_molg,Th_molg)
+    age_uncorrected = calculate_age(He_molg,U238_molg,U235_molg,Th_molg)
     
-    return(age)
+    print('Age (Ma) Uncorrected: ',age_uncorrected)
+    
+    parent_uncorrected = np.array([U238_molg,U235_molg,Th_molg])
+    parent_corrected = parent_uncorrected*tau
+    
+    age_corrected = calculate_age(He_molg,parent_corrected[0],
+                                  parent_corrected[1],parent_corrected[2])
+    
+    print('Age (Ma) Corrected: ',age_corrected)
+    
+    return(age_corrected)
         
         
         
