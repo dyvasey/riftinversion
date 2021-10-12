@@ -22,19 +22,19 @@ age_model = tc.forward_model(
 
 #%% Example with model output data
 
-meshes = pv.read(r'C:/Users/dyvas/Box/UC Davis/ASPECT/particles/meshes.vtm')
+meshes = pv.read(r'C:/Users/dyvas/Box/UC Davis/ASPECT/topography/meshes.vtm')
 
-partial_path = np.arange(0,33,1)
+path = np.arange(0,33,1)
 
-point = 8835564.0
+point = 4.17905e+06
 
 
-tt = vp.particle_trace(meshes,partial_path,point,'T',
+tt = vp.particle_trace(meshes,path,point,'T',
                              x_field='time',
                              plot_path=True)
 #%% Run Age Model
 tt_c = np.array(tt)
 
 age_model_2 = tc.forward_model(
-    U,Th,radius,tt_c,time_interval,system='AHe',nodes=500)
+    U,Th,radius,tt_c,time_interval,system='AHe')
 
