@@ -424,7 +424,6 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=500):
     print('Node Spacing (microns): ',node_spacing)
     
     node_positions = calculate_node_positions(node_spacing,radius)
-    print(node_positions.size)
     
     # Get parameters for the appropriate mineral
     freq_factor,activ_energy,stop_distances = get_parameters(system)
@@ -441,8 +440,7 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=500):
     
     # Calculate He production based on U and Th, adjusted for alpha correction,
     # and using timestep as the interval
-    He_production = calculate_He_production_old(U238_alpha,U235_alpha,Th_alpha)
-    
+    He_production = calculate_He_production_rate(U238_alpha,U235_alpha,Th_alpha)
     
     # Set initial x (He) equal to 0 for first timestep
     x = np.zeros(nodes)
