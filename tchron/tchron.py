@@ -116,6 +116,8 @@ def calculate_diffusivity(T,freq_factor,activ_energy,R=8.3144598):
     """
     Calculate diffusivity (kappa) based on temperature and system diffusion
     parameters
+    
+    After Reiners and Brandon, 2006, with PVa term assumed to be 0.
 
     Parameters
     ----------
@@ -191,9 +193,9 @@ def UTh_ppm2molg(U,Th):
     
     return(U238_molg,U235_molg,Th_molg)
 
-def calculate_He_production(U238_molg,U235_molg,Th_molg):
+def calculate_He_production_rate(U238_molg,U235_molg,Th_molg):
     """
-    Calculate He production as a function of U and Th.
+    Calculate He production rate as a function of U and Th.
 
     Parameters
     ----------
@@ -222,8 +224,23 @@ def calculate_He_production(U238_molg,U235_molg,Th_molg):
     He_production = term238+term235+term232
     
     return(He_production)
+    
+    
+def calculate_He_production(U238_molg,U235_molg,Th_molg,t1,t2):
+    
+    lambda238 = -np.log(1/2)/4.468e9
+    lambda235 = -np.log(1/2)/7.04e8
+    lambda232 = -np.log(1/2)/1.40e10
+    
+    term238 = 8*U238_molg*(np.exp(lambda238*t2)-np.exp(lambda238*t1))
+    term235 = 7*U235_molg*(np.exp(lambda235*t2)-np.exp(lambda235*t1))
+    term232 = 6*Th_molg*(np.exp(lambda232*t2)-np.exp(lambda232*t1))
+    
+    He_production = term238+term235+term232
+    
+    return(He_production)
 
-def initial_conditions(node_spacing,nodes,time_interval,He_production,beta):
+def calculate_node_positions(node_spacing,radius):
     """
     Calculate initial A and B matrices to solve for x for initial timestep.
     
@@ -252,11 +269,9 @@ def initial_conditions(node_spacing,nodes,time_interval,He_production,beta):
         Radial positions of each modeled node (um)
 
     """
-    node_positions = np.arange(node_spacing/2,nodes*node_spacing,node_spacing)
-    B_initial = -He_production/(nodes)*node_positions*beta*time_interval
-    A_initial = tridiag(1,-2-beta,1,nodes)
+    node_positions = np.arange(node_spacing/2,radius,node_spacing)
     
-    return(A_initial,B_initial,node_positions)
+    return(node_positions)
 
 def sum_He(x,node_positions):
     """
@@ -285,7 +300,7 @@ def sum_He(x,node_positions):
     
     print('He (ncc/g): ',He_nccg)
 
-    return(He_molg)
+    return(He_molg,volumes)
 
 def calculate_age(He_molg,U238_molg,U235_molg,Th_molg):
     """
@@ -359,6 +374,19 @@ def alpha_correction(stopping_distance,radius):
     
     return(tau)
 
+def model_alpha_ejection(node_position,stopping_distance,radius):
+    
+    
+    intersection_plane = (
+        (node_position**2 + radius**2 - stopping_distance**2)/(2*node_position)
+        )
+    
+    retained_fraction = (
+        0.5 + (intersection_plane-node_position)/(2*stopping_distance)
+        )
+    
+    return(retained_fraction)
+
 def forward_model(U,Th,radius,temps,time_interval,system,nodes=500):
     """
     Forward model a (U-Th)/He age for a particular time-temperature path.
@@ -395,17 +423,32 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=500):
     node_spacing = radius/nodes
     print('Node Spacing (microns): ',node_spacing)
     
+    node_positions = calculate_node_positions(node_spacing,radius)
+    print(node_positions.size)
+    
     # Get parameters for the appropriate mineral
     freq_factor,activ_energy,stop_distances = get_parameters(system)
     
     # Get array of correction values (238,235,232)
     tau = alpha_correction(stop_distances,radius)
     
-    # Calculate He production based on U and Th
+    # Get mol/g of U,Th and account for alpha ejection
     U238_molg,U235_molg,Th_molg = UTh_ppm2molg(U,Th)
-    He_production = calculate_He_production(U238_molg,U235_molg,Th_molg)
     
-    # Loop through each step of the T-t path
+    U238_alpha = U238_molg*tau[0]
+    U235_alpha = U235_molg*tau[1]
+    Th_alpha = Th_molg*tau[2]
+    
+    # Calculate He production based on U and Th, adjusted for alpha correction,
+    # and using timestep as the interval
+    He_production = calculate_He_production_old(U238_alpha,U235_alpha,Th_alpha)
+    
+    
+    # Set initial x (He) equal to 0 for first timestep
+    x = np.zeros(nodes)
+    
+    # Loop through each step of the T-t path, starting with the second
+    # temperature
     
     for k,temp in enumerate(temps):
         
@@ -414,58 +457,55 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=500):
         diffusivity = calculate_diffusivity(temp,freq_factor,activ_energy)
         beta = calculate_beta(diffusivity,node_spacing, time_interval)
         
-        # For first timestep, use boundary conditions to get initial A and B
-        # and set up node positions
-        if k==0:
-            A,B,node_positions = initial_conditions(node_spacing,nodes,
-                                                    time_interval,He_production,
-                                                    beta)
-       # For subsequent timesteps, calculate new A and use x to calculate new B
-        else:
-            A = tridiag(1,-2-beta,1,nodes)
-            B = np.empty(nodes)
-            # Loop through each node
-            for j in range(len(B)):
-                # For first node, use boundary condition (Neumann)
-                if j==0:
-                    B[j] = (
-                        x[j] + (2-beta)*x[j] - x[j+1]
-                        - He_production/nodes*node_positions[j]*beta*time_interval
-                        )
+       # Calculate new A and use x to calculate new B
+
+        A = tridiag(1,-2-beta,1,nodes)
+        B = np.zeros(nodes)
+        # Loop through each node
+        for j in range(len(node_positions)):
+            # For first node, use boundary condition (Neumann)
+            if j==0:
+                B[j] = (
+                    x[j] + (2-beta)*x[j] - x[j+1]
+                    - He_production/nodes*node_positions[j]*beta*time_interval
+                    )
                 
-                # For last node, use boundary condition (Drichlet)
-                elif j==(len(B)-1):
-                    B[j] = (
-                        x[j] + (2-beta)*x[j] - 0
-                        - He_production/nodes*node_positions[j]*beta*time_interval
-                        )
-                    
-                # Use previous and subsequen nodes for remaining nodes
-                else:
-                    B[j] = (
-                        -x[j-1] + (2-beta)*x[j] - x[j+1]
-                        - He_production/nodes*node_positions[j]*beta*time_interval
-                        )
+            # For last node, use boundary condition (Drichlet)
+            elif j==(len(B)-1):
+                B[j] = (
+                    -x[j-1] + (2-beta)*x[j] - 0
+                    - He_production/nodes*node_positions[j]*beta*time_interval
+                    )
+            # Use previous and subsequent nodes for remaining nodes
+            else:
+                B[j] = (
+                    -x[j-1] + (2-beta)*x[j] - x[j+1]
+                    - He_production/nodes*node_positions[j]*beta*time_interval
+                    )
         
         # Solve for x using A and B
 
         x = np.linalg.solve(A,B)
         
-    He_molg = sum_He(x,node_positions)
+        
+    He_molg,volumes = sum_He(x,node_positions)
+    
+    # Because alpha ejection modeled, model age is a "uncorrected" age.
     
     age_uncorrected = calculate_age(He_molg,U238_molg,U235_molg,Th_molg)
     
     print('Age (Ma) Uncorrected: ',age_uncorrected)
-    
-    parent_uncorrected = np.array([U238_molg,U235_molg,Th_molg])
-    parent_corrected = parent_uncorrected*tau
-    
-    age_corrected = calculate_age(He_molg,parent_corrected[0],
-                                  parent_corrected[1],parent_corrected[2])
+
+    # "Corrected" age uses alpha-adjusted U-Th values
+    age_corrected = calculate_age(He_molg,U238_alpha,U235_alpha,Th_alpha)
     
     print('Age (Ma) Corrected: ',age_corrected)
     
-    return(age_corrected)
+    # Make diffusional profile
+    volumes_normalized = volumes
+    position_normalized = node_positions
+    
+    return(age_corrected,volumes_normalized,position_normalized)
         
         
         
