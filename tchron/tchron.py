@@ -299,12 +299,13 @@ def calculate_node_positions(node_spacing,radius):
     
     return(node_positions)
 
-def sum_He(x,node_positions,radius):
+def sum_He_shells(x,node_positions,radius,nodes):
     """
     Sum He produced within all nodes of the modeled crystal. 
     
-    Uses substition for He volume after Ketcham, 2005. Also prints out He
-    volume in ncc/g for comparison with real data.
+    Uses substition for He volume after Ketcham, 2005. Converts radial profile
+    to system of shells, so He is weighted by volume of shell. Also prints out 
+    He volume for comparison with real data.
 
     Parameters
     ----------
@@ -313,6 +314,10 @@ def sum_He(x,node_positions,radius):
         Equivalent to the volume times the node position.
     node_positions : NumPy array
         Radial positions of each modeled node (um)
+    radius : float
+            Radius of the grain (um)    
+    nodes : float
+            Number of modeled nodes in the crystal
 
     Returns
     -------
@@ -324,8 +329,28 @@ def sum_He(x,node_positions,radius):
     # Back-substitute u=vr to get radial profile
     v = (x/node_positions)
     
+    # Get volumes of spheres at each node
+    sphere_volumes = (node_positions)**3 * (4*np.pi/3)
+    
+    # Get total volume of the sphere
+    total_volume = radius**3 * (4*np.pi/3)
+    
+    # Calculate volumes for the shell corresponding to each node
+    shell_volumes = np.empty(sphere_volumes.size)
+    for x in range(sphere_volumes.size):
+        if x==0:
+            shell_volumes[x]=sphere_volumes[x]
+        else:
+            shell_volumes[x] = sphere_volumes[x] - sphere_volumes[x-1]
+    
+    # Get shell as fraction of total volume
+    shell_fraction = shell_volumes/total_volume
+    
+    # Scale He within radial profile by shell fraction and number of nodes
+    v_shells = v*shell_fraction*nodes
+    
     # Integrate weighted radial profile
-    He_molg = romb(v)
+    He_molg = romb(v_shells)
     He_nccg = He_molg * 22.4e12
     
     print('He (ncc/g): ',He_nccg)
@@ -535,7 +560,7 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=513):
         # plt.plot(node_positions,x/node_positions)
         
         
-    He_molg,volumes = sum_He(x,node_positions,radius)
+    He_molg,volumes = sum_He_shells(x,node_positions,radius,nodes)
     
     # Because alpha ejection modeled, model age is an "uncorrected" age.
     age_uncorrected = calculate_age(He_molg,U238_molg,U235_molg,Th_molg)

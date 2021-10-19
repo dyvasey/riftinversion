@@ -10,11 +10,11 @@ age_ketcham = 7.12
 U = 100
 Th = 100
 radius = 100
-time_interval = 1e6
-early_t = np.linspace(120,65,58) + 273
-late_t = np.linspace(65,20,4)+273
+time_interval = 0.5e6
+early_t = np.linspace(120,65,116) + 273
+late_t = np.linspace(65,20,6)+273
 temps = np.append(early_t,late_t[1:])
-times = np.arange(60,0-1,-1)
+times = np.arange(60,0-0.1,-0.5)
 
 
 fig, axs = plt.subplots(1,2)
@@ -26,7 +26,7 @@ axs[0].grid(True)
 axs[0].set_xlim(100,0)
 axs[0].set_ylim(200,0)
 axs[0].set_xlabel('Time (Ma)')
-axs[0].set_ylabel('Temperature (K)')
+axs[0].set_ylabel('Temperature (C)')
 axs[0].set_title('Time-Temperature History')
 
 age_model,volumes,positions = tc.forward_model(U,Th,radius,temps,time_interval,system='AHe')
