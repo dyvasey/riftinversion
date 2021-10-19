@@ -195,30 +195,6 @@ def UTh_ppm2molg(U,Th):
     
     return(U238_molg,U235_molg,Th_molg)
 
-def UTh_sphere(U238_molg,U235_molg,Th_molg,node_positions,radius):
-    print(U238_molg)
-    print(U235_molg)
-    print(Th_molg)
-    
-    sphere_volumes = (node_positions/radius)**3 * (4*np.pi/3)
-    
-    shell_volumes = np.empty(sphere_volumes.size)
-    for x in range(sphere_volumes.size):
-        if x==0:
-            shell_volumes[x]=sphere_volumes[x]
-        else:
-            shell_volumes[x] = sphere_volumes[x] - sphere_volumes[x-1]
-    
-    U238_shells = romb(U238_molg*shell_volumes)
-    U235_shells = romb(U235_molg*shell_volumes)
-    Th_shells = romb(Th_molg*shell_volumes)
-    
-    print('U238 in Sphere: ',U238_shells)
-    print('U235 in Sphere: ',U235_shells)
-    print('Th232 in Sphere: ',Th_shells)
-    
-    return(U238_shells,U235_shells,Th_shells)
-
 def calculate_He_production_rate(U238_molg,U235_molg,Th_molg):
     """
     Calculate He production rate as a function of U and Th.
@@ -251,24 +227,10 @@ def calculate_He_production_rate(U238_molg,U235_molg,Th_molg):
     
     return(He_production)
     
-    
-def calculate_He_production(U238_molg,U235_molg,Th_molg,t1,t2):
-    
-    lambda238 = -np.log(1/2)/4.468e9
-    lambda235 = -np.log(1/2)/7.04e8
-    lambda232 = -np.log(1/2)/1.40e10
-    
-    term238 = 8*U238_molg*(np.exp(lambda238*t2)-np.exp(lambda238*t1))
-    term235 = 7*U235_molg*(np.exp(lambda235*t2)-np.exp(lambda235*t1))
-    term232 = 6*Th_molg*(np.exp(lambda232*t2)-np.exp(lambda232*t1))
-    
-    He_production = term238+term235+term232
-    
-    return(He_production)
 
 def calculate_node_positions(node_spacing,radius):
     """
-    Calculate initial A and B matrices to solve for x for initial timestep.
+    Calculate node positions given spacing and radius.
     
     Follows Ketcham, 2005.
 
@@ -276,21 +238,11 @@ def calculate_node_positions(node_spacing,radius):
     ----------
     node_spacing : float
         Distance between nodes in the crystal (um)
-    nodes : float
-        Number of modeled nodes in the crystal
-    time_interval : float
-        Interval between modeled timesteps (yr)
-    He_production : float
-        He production (mol/g)
-    beta : float
-        Beta, a substitution defined in Ketcham, 2005.
-
+    radius : float
+                Radius of the grain (um)  
+    
     Returns
     -------
-    A_initial : NumPy array
-        Initial A matrix
-    B_initial : NumPy array
-        Initial B matrix
     node_positions : NumPy array
         Radial positions of each modeled node (um)
 
@@ -323,6 +275,8 @@ def sum_He_shells(x,node_positions,radius,nodes):
     -------
     He_molg : float
         Total amount (mol/g) of He within the modeled crystal.
+    v : NumPy array
+        Radial profile of He (mol/g)
 
     """
     
@@ -380,7 +334,7 @@ def calculate_age(He_molg,U238_molg,U235_molg,Th_molg):
     Returns
     -------
     age_Ma : float
-        Calculated U
+        Calculated (U-Th)/He age
 
     """
     
@@ -431,6 +385,25 @@ def alpha_correction(stopping_distance,radius):
     return(tau)
 
 def model_alpha_ejection(node_positions,stopping_distance,radius):
+    """
+    Model retained fraction of He after alpha ejection, given node position,
+    stopping distances, and radius.
+
+    Parameters
+    ----------
+    node_positions : NumPy array
+        Radial positions of each modeled node (um)
+    stopping_distance : float
+        Stopping distance for particular isotopic system (um).
+    radius : float
+        Radius of the grain (um)
+
+    Returns
+    -------
+    retained_fraction_edge : NumPy array
+        Fraction of He retained after alpha ejection for each node position
+
+    """
     
     # Find edge nodes based on stopping distance and radius
     edge_nodes = node_positions >= radius-stopping_distance
@@ -473,7 +446,7 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=513):
     system : string
         Isotopic system. Current options are 'AHe' and 'ZHe'.
     nodes : float, optional
-        Number of nodes to model within the crystal. The default is 500.
+        Number of nodes to model within the crystal. The default is 513.
 
     Returns
     -------
@@ -554,10 +527,8 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=513):
                     )
         
         # Solve for x using A and B
-
         x = np.linalg.solve(A,B)
         
-        # plt.plot(node_positions,x/node_positions)
         
         
     He_molg,volumes = sum_He_shells(x,node_positions,radius,nodes)
