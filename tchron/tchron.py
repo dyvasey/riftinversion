@@ -526,7 +526,7 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=513):
                     - He_production[j]*node_positions[j]*beta*time_interval
                     )
         
-        # Solve for x using A and B
+        # Solve for x using A and Bls
         x = np.linalg.solve(A,B)
         
         

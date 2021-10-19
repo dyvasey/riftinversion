@@ -18,7 +18,7 @@ time_interval = 1e6 # years
 temps = np.array([500,150,30,30])+273 # K
 
 age_model = tc.forward_model(
-    U,Th,radius,temps,time_interval,system='AHe',nodes=500)
+    U,Th,radius,temps,time_interval,system='AHe')
 
 #%% Example with model output data
 
