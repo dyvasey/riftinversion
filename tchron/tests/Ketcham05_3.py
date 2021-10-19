@@ -7,13 +7,14 @@ from riftinversion.tchron import tchron as tc
 
 age_ketcham = 7.12
 
-U = 1
-Th = 1
-radius = 50
-time_interval = 2.5e6
-early_t = np.linspace(120,65,24) + 273
-temps = np.append(early_t,20+273)
-times = np.arange(60,0-1,-2.5)
+U = 100
+Th = 100
+radius = 100
+time_interval = 1e6
+early_t = np.linspace(120,65,58) + 273
+late_t = np.linspace(65,20,4)+273
+temps = np.append(early_t,late_t[1:])
+times = np.arange(60,0-1,-1)
 
 
 fig, axs = plt.subplots(1,2)
@@ -32,8 +33,8 @@ age_model,volumes,positions = tc.forward_model(U,Th,radius,temps,time_interval,s
 
 axs[1].plot(positions,volumes)
 axs[1].grid(True)
-axs[1].set_xlabel('Radius (um)')
-axs[1].set_ylabel('He Concentration (mol/g)')
+axs[1].set_xlabel('Radius (normalized)')
+axs[1].set_ylabel('He Concentration (normalized)')
 axs[1].set_title('He Profile')
 axs[1].annotate(str(round(age_model,2))+' Ma',xy=(0.5,0.5),xycoords='axes fraction')
 

@@ -2,7 +2,9 @@
 Functions for forward modeling of thermochronometric ages
 """
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
+from scipy.integrate import romb,romberg
 
 def tridiag(a, b, c, diag_length):
     """
@@ -193,6 +195,30 @@ def UTh_ppm2molg(U,Th):
     
     return(U238_molg,U235_molg,Th_molg)
 
+def UTh_sphere(U238_molg,U235_molg,Th_molg,node_positions,radius):
+    print(U238_molg)
+    print(U235_molg)
+    print(Th_molg)
+    
+    sphere_volumes = (node_positions/radius)**3 * (4*np.pi/3)
+    
+    shell_volumes = np.empty(sphere_volumes.size)
+    for x in range(sphere_volumes.size):
+        if x==0:
+            shell_volumes[x]=sphere_volumes[x]
+        else:
+            shell_volumes[x] = sphere_volumes[x] - sphere_volumes[x-1]
+    
+    U238_shells = romb(U238_molg*shell_volumes)
+    U235_shells = romb(U235_molg*shell_volumes)
+    Th_shells = romb(Th_molg*shell_volumes)
+    
+    print('U238 in Sphere: ',U238_shells)
+    print('U235 in Sphere: ',U235_shells)
+    print('Th232 in Sphere: ',Th_shells)
+    
+    return(U238_shells,U235_shells,Th_shells)
+
 def calculate_He_production_rate(U238_molg,U235_molg,Th_molg):
     """
     Calculate He production rate as a function of U and Th.
@@ -273,7 +299,7 @@ def calculate_node_positions(node_spacing,radius):
     
     return(node_positions)
 
-def sum_He(x,node_positions):
+def sum_He(x,node_positions,radius):
     """
     Sum He produced within all nodes of the modeled crystal. 
     
@@ -294,13 +320,18 @@ def sum_He(x,node_positions):
         Total amount (mol/g) of He within the modeled crystal.
 
     """
-    volumes = x/node_positions
-    He_molg = np.sum(volumes)
+    
+    # Back-substitute u=vr to get radial profile
+    v = (x/node_positions)
+    
+    # Integrate weighted radial profile
+    He_molg = romb(v)
     He_nccg = He_molg * 22.4e12
     
     print('He (ncc/g): ',He_nccg)
+    print('He (nmol/g): ',He_molg*1e9)
 
-    return(He_molg,volumes)
+    return(He_molg,v)
 
 def calculate_age(He_molg,U238_molg,U235_molg,Th_molg):
     """
@@ -374,20 +405,27 @@ def alpha_correction(stopping_distance,radius):
     
     return(tau)
 
-def model_alpha_ejection(node_position,stopping_distance,radius):
+def model_alpha_ejection(node_positions,stopping_distance,radius):
     
+    # Find edge nodes based on stopping distance and radius
+    edge_nodes = node_positions >= radius-stopping_distance
     
-    intersection_plane = (
-        (node_position**2 + radius**2 - stopping_distance**2)/(2*node_position)
+    # Calculate intersection planes for all nodes
+    intersection_planes = (
+        (node_positions**2 + radius**2 - stopping_distance**2)/(2*node_positions)
         )
     
-    retained_fraction = (
-        0.5 + (intersection_plane-node_position)/(2*stopping_distance)
+    # Calculate retained fractions for all nodes hypothetically
+    retained_fractions_all = (
+        0.5 + (intersection_planes-node_positions)/(2*stopping_distance)
         )
     
-    return(retained_fraction)
+    # Only apply retained fraction to edge nodes
+    retained_fractions_edge = np.where(edge_nodes,retained_fractions_all,1)
+    
+    return(retained_fractions_edge)
 
-def forward_model(U,Th,radius,temps,time_interval,system,nodes=500):
+def forward_model(U,Th,radius,temps,time_interval,system,nodes=513):
     """
     Forward model a (U-Th)/He age for a particular time-temperature path.
     
@@ -428,18 +466,26 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=500):
     # Get parameters for the appropriate mineral
     freq_factor,activ_energy,stop_distances = get_parameters(system)
     
-    # Get array of correction values (238,235,232)
-    tau = alpha_correction(stop_distances,radius)
     
     # Get mol/g of U,Th and account for alpha ejection
     U238_molg,U235_molg,Th_molg = UTh_ppm2molg(U,Th)
     
-    U238_alpha = U238_molg*tau[0]
-    U235_alpha = U235_molg*tau[1]
-    Th_alpha = Th_molg*tau[2]
+    U238_alpha = (
+        U238_molg/nodes*model_alpha_ejection(node_positions,stop_distances[0],
+                                                radius)
+        )
     
-    # Calculate He production based on U and Th, adjusted for alpha correction,
-    # and using timestep as the interval
+    U235_alpha = (
+        U235_molg/nodes*model_alpha_ejection(node_positions,stop_distances[1],
+                                                radius)
+        )
+    
+    Th_alpha = (
+        Th_molg/nodes*model_alpha_ejection(node_positions,stop_distances[2],
+                                                radius)
+        )
+    
+    # Calculate He production based on U and Th, adjusted for alpha ejection.
     He_production = calculate_He_production_rate(U238_alpha,U235_alpha,Th_alpha)
     
     # Set initial x (He) equal to 0 for first timestep
@@ -458,50 +504,61 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=500):
        # Calculate new A and use x to calculate new B
 
         A = tridiag(1,-2-beta,1,nodes)
+        A[0,0]=-3-beta # Following Guenthner Matlab script - Neumann
         B = np.zeros(nodes)
         # Loop through each node
         for j in range(len(node_positions)):
             # For first node, use boundary condition (Neumann)
             if j==0:
                 B[j] = (
-                    x[j] + (2-beta)*x[j] - x[j+1]
-                    - He_production/nodes*node_positions[j]*beta*time_interval
+                    x[j] + (2-beta)*x[j] - x[j+1] # Guenthner Matlab script
+                    - He_production[j]*node_positions[j]*beta*time_interval
                     )
                 
             # For last node, use boundary condition (Drichlet)
             elif j==(len(B)-1):
                 B[j] = (
                     -x[j-1] + (2-beta)*x[j] - 0
-                    - He_production/nodes*node_positions[j]*beta*time_interval
+                    - He_production[j]*node_positions[j]*beta*time_interval
                     )
             # Use previous and subsequent nodes for remaining nodes
             else:
                 B[j] = (
                     -x[j-1] + (2-beta)*x[j] - x[j+1]
-                    - He_production/nodes*node_positions[j]*beta*time_interval
+                    - He_production[j]*node_positions[j]*beta*time_interval
                     )
         
         # Solve for x using A and B
 
         x = np.linalg.solve(A,B)
         
+        # plt.plot(node_positions,x/node_positions)
         
-    He_molg,volumes = sum_He(x,node_positions)
+        
+    He_molg,volumes = sum_He(x,node_positions,radius)
     
-    # Because alpha ejection modeled, model age is a "uncorrected" age.
-    
+    # Because alpha ejection modeled, model age is an "uncorrected" age.
     age_uncorrected = calculate_age(He_molg,U238_molg,U235_molg,Th_molg)
     
     print('Age (Ma) Uncorrected: ',age_uncorrected)
 
     # "Corrected" age uses alpha-adjusted U-Th values
-    age_corrected = calculate_age(He_molg,U238_alpha,U235_alpha,Th_alpha)
+    
+    # Get array of correction values (238,235,232)
+    tau = alpha_correction(stop_distances,radius)
+    
+    # Correct U and Th accordingly
+    U238_corr = U238_molg*tau[0]
+    U235_corr = U235_molg*tau[1]
+    Th_corr = Th_molg*tau[2]
+    
+    age_corrected = calculate_age(He_molg,U238_corr,U235_corr,Th_corr)
     
     print('Age (Ma) Corrected: ',age_corrected)
     
     # Make diffusional profile
-    volumes_normalized = volumes
-    position_normalized = node_positions
+    volumes_normalized = volumes/np.max(volumes)
+    position_normalized = node_positions/radius
     
     return(age_corrected,volumes_normalized,position_normalized)
         
