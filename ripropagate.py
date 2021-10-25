@@ -43,7 +43,7 @@ def lthickness(text,lthick):
     
     return(text)
 
-def evelocity(text,evel):
+def evelocity(text,evel,p1=250e3,p2=150e3):
     """
     Add extension velocity
     
@@ -58,10 +58,17 @@ def evelocity(text,evel):
     # Convert total velocity in cm/yr to half velocity in m/yr
     v = (evel/2)/100
     
+    # Get slope based on extension velocity and transition to outflow depth
+    s = (v*2)/(p2-p1)
+    
     base = 'XXX' # Dummy value in in base file
      
     old = 'v='+base
     new = 'v='+str(v)
+    text = text.replace(old,new)
+    
+    old = 's='+base
+    new = 's='+str(s)
     text = text.replace(old,new)
     
     return(text)

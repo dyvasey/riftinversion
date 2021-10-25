@@ -300,8 +300,8 @@ def sum_He_shells(x,node_positions,radius,nodes):
     # Get shell as fraction of total volume
     shell_fraction = shell_volumes/total_volume
     
-    # Scale He within radial profile by shell fraction and number of nodes
-    v_shells = v*shell_fraction*nodes
+    # Scale He within radial profile by shell fraction
+    v_shells = v*shell_fraction
     
     # Integrate weighted radial profile
     He_molg = romb(v_shells)
@@ -469,17 +469,17 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=513):
     U238_molg,U235_molg,Th_molg = UTh_ppm2molg(U,Th)
     
     U238_alpha = (
-        U238_molg/nodes*model_alpha_ejection(node_positions,stop_distances[0],
+        U238_molg*model_alpha_ejection(node_positions,stop_distances[0],
                                                 radius)
         )
     
     U235_alpha = (
-        U235_molg/nodes*model_alpha_ejection(node_positions,stop_distances[1],
+        U235_molg*model_alpha_ejection(node_positions,stop_distances[1],
                                                 radius)
         )
     
     Th_alpha = (
-        Th_molg/nodes*model_alpha_ejection(node_positions,stop_distances[2],
+        Th_molg*model_alpha_ejection(node_positions,stop_distances[2],
                                                 radius)
         )
     
