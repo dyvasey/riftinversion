@@ -12,7 +12,7 @@
 module load gcc/7.1.0 
 
 # Aspect executable
-ASP="/work/07937/davasey/stampede2/software/gcc-7.1.0/aspect/aspect-fs-particle-fix/aspect/build/./aspect"
+ASP="/work/07937/davasey/stampede2/software/gcc-7.1.0/aspect/aspect-fs-rebase/aspect/build/./aspect"
 
 # Run model.  Submit job with "sbatch run.sh"
 ibrun $ASP XXX
