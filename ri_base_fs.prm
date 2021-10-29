@@ -113,6 +113,9 @@ subsection Mesh deformation
       set Fastscape seed = 1000
 
       set Vertical exaggeration = 1
+      
+      # Turn on marine deposition
+      set Use marine component            = true
 
       # Fix all boundaries in FastScape.
       subsection Boundary conditions
