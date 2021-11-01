@@ -99,15 +99,15 @@ subsection Mesh deformation
       set Resolution difference = 0
 
       # We set fastscape as 1 levels more resolved than ASPECT's initial global surface resolution.
-      set Additional fastscape refinement = 1
+      set Additional fastscape refinement = 0
 
       # Number of FastScape timesteps we want per ASPECT timestep.
-      set Number of steps = 2
+      set Number of steps = 5
 
       # Set the maximum allowable FastScape timestep. If the (ASPECT timestep)/(Number of steps)
       # is greater than this value, then the number of steps is automatically doubled.
       # This is continued until the FastScape timestep is less than this value.
-      set Maximum timestep = 2500
+      set Maximum timestep = 1000
 
       # Seed number for initial topography noise
       set Fastscape seed = 1000
@@ -131,14 +131,28 @@ subsection Mesh deformation
       # bedrock values.
       subsection Erosional parameters
         set Drainage area exponent = 0.4
-        set Bedrock diffusivity = 1e-2
-        set Bedrock river incision rate = 1e-4
+        set Bedrock diffusivity = 5e-3
+        set Bedrock river incision rate = 1e-5
         set Slope exponent = 1
         set Bedrock deposition coefficient = 1
 
         # A negative value indicates varied flow. 10 is steepest descent, and 1 is uniform distribution.
         set Multi-direction slope exponent = -1
-       end
+      end
+      
+      subsection Marine parameters
+        set Sea level = -500
+        set Sand porosity = 0
+        set Shale porosity = 0
+        set Sand e-folding depth = 0
+        set Shale e-folding depth =  0
+     
+     
+        set Sand-shale ratio = 1
+        set Depth averaging thickness = 1e2
+        set Sand transport coefficient = 200
+        set Shale transport coefficient = 200
+      end
    end
 end
 
