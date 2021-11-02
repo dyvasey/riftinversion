@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 from scipy.integrate import romb,romberg
+from scipy.linalg import solve_banded
 
 def tridiag(a, b, c, diag_length):
     """
@@ -35,7 +36,39 @@ def tridiag(a, b, c, diag_length):
         np.diag(a_array, -1) + np.diag(b_array, 0) + np.diag(c_array, 1)
         )
     
-    return(tridiag_matrix) 
+    return(tridiag_matrix)
+
+def tridiag_banded(a, b, c, diag_length):
+    """
+    Set up a tridiagonal matrix in banded form
+    from the values for the 3 diagonals (a,b,c).
+
+    Parameters
+    ----------
+    a : float
+        First diagonal value
+    b : float
+        Second diagonal value
+    c : float
+        Third diagonal value
+    diag_length : flaot
+        Length of principal diagonal 
+
+    Returns
+    -------
+    tridiag_matrix : NumPy array
+        Tridiagonal matri
+
+    """
+    a_array = np.ones(diag_length)*a
+    b_array = np.ones(diag_length)*b
+    c_array = np.ones(diag_length)*c
+    
+    banded_matrix = np.vstack((a_array,b_array,c_array))
+    banded_matrix[0,0] = 0
+    banded_matrix[-1,-1] = 0
+    
+    return(banded_matrix) 
 
 def get_parameters(system='AHe'):
     """
@@ -251,7 +284,7 @@ def calculate_node_positions(node_spacing,radius):
     
     return(node_positions)
 
-def sum_He_shells(x,node_positions,radius,nodes):
+def sum_He_shells(x,node_positions,radius,nodes,print_He=True):
     """
     Sum He produced within all nodes of the modeled crystal. 
     
@@ -307,8 +340,9 @@ def sum_He_shells(x,node_positions,radius,nodes):
     He_molg = romb(v_shells)
     He_nccg = He_molg * 22.4e12
     
-    print('He (ncc/g): ',He_nccg)
-    print('He (nmol/g): ',He_molg*1e9)
+    if print_He==True:
+        print('He (ncc/g): ',He_nccg)
+        print('He (nmol/g): ',He_molg*1e9)
 
     return(He_molg,v)
 
@@ -423,7 +457,8 @@ def model_alpha_ejection(node_positions,stopping_distance,radius):
     
     return(retained_fractions_edge)
 
-def forward_model(U,Th,radius,temps,time_interval,system,nodes=513):
+def forward_model(U,Th,radius,temps,time_interval,system,nodes=513,
+                  print_age=True):
     """
     Forward model a (U-Th)/He age for a particular time-temperature path.
     
@@ -457,7 +492,6 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=513):
     
     # Find node spacing and time interval based on radius and T-t path
     node_spacing = radius/nodes
-    print('Node Spacing (microns): ',node_spacing)
     
     node_positions = calculate_node_positions(node_spacing,radius)
     
@@ -499,10 +533,10 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=513):
         diffusivity = calculate_diffusivity(temp,freq_factor,activ_energy)
         beta = calculate_beta(diffusivity,node_spacing, time_interval)
         
-       # Calculate new A and use x to calculate new B
+       # Calculate new A (banded) and use x to calculate new B
 
-        A = tridiag(1,-2-beta,1,nodes)
-        A[0,0]=-3-beta # Following Guenthner Matlab script - Neumann
+        AB = tridiag_banded(1,-2-beta,1,nodes)
+        AB[1,0]=-3-beta # Following Guenthner Matlab script - Neumann
         B = np.zeros(nodes)
         # Loop through each node
         for j in range(len(node_positions)):
@@ -526,17 +560,14 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=513):
                     - He_production[j]*node_positions[j]*beta*time_interval
                     )
         
-        # Solve for x using A and Bls
-        x = np.linalg.solve(A,B)
+        # Solve for x using banded A and B
+        x = solve_banded((1,1),AB,B)
         
-        
-        
-    He_molg,volumes = sum_He_shells(x,node_positions,radius,nodes)
+    He_molg,volumes = sum_He_shells(x,node_positions,radius,nodes,
+                                    print_He=print_age)
     
     # Because alpha ejection modeled, model age is an "uncorrected" age.
     age_uncorrected = calculate_age(He_molg,U238_molg,U235_molg,Th_molg)
-    
-    print('Age (Ma) Uncorrected: ',age_uncorrected)
 
     # "Corrected" age uses alpha-adjusted U-Th values
     
@@ -550,7 +581,9 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=513):
     
     age_corrected = calculate_age(He_molg,U238_corr,U235_corr,Th_corr)
     
-    print('Age (Ma) Corrected: ',age_corrected)
+    if print_age==True:
+        print('Age (Ma) Uncorrected: ',age_uncorrected)
+        print('Age (Ma) Corrected: ',age_corrected)
     
     # Make diffusional profile
     volumes_normalized = volumes/np.max(volumes)

@@ -32,6 +32,8 @@ point = 4.17905e+06
 tt = vp.particle_trace(meshes,path,point,'T',
                              x_field='time',
                              plot_path=True)
+
+tt_alt = vp.get_tt_path(meshes,path,point)
 #%% Run Age Model
 tt_c = np.array(tt)
 

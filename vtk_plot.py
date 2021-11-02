@@ -2,13 +2,14 @@
 Functions for plotting data from VTU/PVTU files.
 """
 import os
-from datetime import datetime
 
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
 from tqdm import tqdm
+
+from riftinversion.tchron import tchron as tc
 
 def plot2D(file,field,bounds,ax=None,contours=False,
          cfields=['crust_upper','crust_lower','mantle_lithosphere'],
@@ -215,8 +216,49 @@ def comp_field_vtk(mesh,fields=['crust_upper','crust_lower','mantle_lithosphere'
     mesh.point_data['comp_field'] = output
     return(mesh)
 
+def He_age_vtk(meshes,system,time_interval,filename='mesh_He.vtu',
+               U=100,Th=100,radius=50):
+    
+    # Isolate final mesh
+    final_mesh = meshes[-1]
+    
+    # Get all particle ids for final mesh
+    ids = pv.point_array(final_mesh,'id')
+    
+    # Create empty np array
+    output = np.zeros(shape=ids.shape)
+    
+    # Get particles that appear in all meshes
+    particles = allmeshes_particles(meshes)
+    
+    # Loop through particles
+    print('Calculating He Ages...')
+    for k,particle in enumerate(tqdm(ids)):
+        if particle in particles:
+            # Get Tt path
+            tt = get_tt_path(meshes,particle.astype(int),
+                                     disable_tqdm=True)
+            
+            # Model age
+            age,vol,pos = tc.forward_model(
+                U,Th,radius,tt,time_interval,system=system,
+                print_age=False)
+        else:
+            age = np.nan
+            
+        output[k] = age
+
+    # Assign array to mesh and return mesh
+    final_mesh.point_data[system] = output
+    
+    # Save mesh to file
+    final_mesh.save(filename)
+    
+    return(final_mesh)
+    
+
 def particle_trace(meshes,timesteps,point,y_field,x_field='time',
-                   plot_path=False):
+                   plot_path=False,disable_tqdm=True):
     """
     Get single particle path over multiple timesteps from meshes generated
     by load_particle_meshes.
@@ -249,8 +291,10 @@ def particle_trace(meshes,timesteps,point,y_field,x_field='time',
     last = timesteps[-1]
     
     # Loop over files
-    
-    for k,mesh in enumerate(tqdm(meshes[first:last+1])):
+    if disable_tqdm==False:
+        print('Tracing Particles...')
+      
+    for k,mesh in enumerate(tqdm(meshes[first:last+1],disable=disable_tqdm)):
         
         ids = pv.point_array(mesh,'id') # Get particle ids
         y_vals = pv.point_array(mesh,y_field) # Get y field values
@@ -318,6 +362,27 @@ def particle_trace(meshes,timesteps,point,y_field,x_field='time',
         
         
     return(point_df)
+
+def get_tt_path(meshes,point,disable_tqdm=True):
+    
+    # Loop over files
+    if disable_tqdm==False:
+        print('Finding Tt path...')
+      
+    tt = np.zeros(len(meshes))
+    
+    for k,mesh in enumerate(tqdm(meshes,disable=disable_tqdm)):
+        
+        ids = mesh.point_data['id'] # Get particle ids
+        temps = mesh.point_data['T'] # Get temperatures
+        
+        # Get temp for particular id
+        temp = temps[ids==point]
+        
+        tt[k] = temp
+        
+    return(tt)
+    
 
 def get_pvtu(directory,timesteps,kind='solution'):
     """
@@ -413,15 +478,13 @@ def load_particle_meshes(directory,timesteps,filename='meshes.vtm',bounds=None):
     meshes: MultiBlock object of clipped meshes for each timestep.
     """
     
-    # Set timer for computation
-    startTime = datetime.now()
-    
     # Set up directory building blocks
     files=get_pvtu(directory,timesteps,kind='particles')
     
     # Setup multiblock
     meshes = pv.MultiBlock()
     
+    print('Loading and Clipping Meshes...')
     for file in tqdm(files):
         mesh = pv.read(file) # Major computation to load this.
     
@@ -435,9 +498,6 @@ def load_particle_meshes(directory,timesteps,filename='meshes.vtm',bounds=None):
         
     # Save clipped meshes as smaller file to work with
     meshes.save(filename)
-    
-    # Print computation time
-    print(datetime.now()-startTime)
     
     return(meshes)
 
@@ -455,6 +515,7 @@ def allmeshes_particles(meshes):
     """
     all_particles = pv.point_array(meshes[0],'id')
     
+    print('Finding particles that appear in all meshes...')
     for mesh in tqdm(meshes[1:-1]):
         mesh_particles = pv.point_array(mesh,'id')
         common_particles = np.intersect1d(all_particles,mesh_particles)
@@ -483,6 +544,7 @@ def get_surface_particles(mesh,topography,buffer=100):
     
     surface_ids = []
     positions = []
+    print('Finding Near Surface Particles...')
     for k,point in enumerate(tqdm(points)):
         part_id = ids[k]
         topo_point = np.interp(point[0],topo[0],topo[1])
