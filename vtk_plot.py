@@ -231,12 +231,15 @@ def He_age_vtk(meshes,system,time_interval,filename='mesh_He.vtu',
     # Get particles that appear in all meshes
     particles = allmeshes_particles(meshes)
     
+    # Extract ids and temps for each mesh
+    all_ids,all_temps = extract_temps(meshes)
+    
     # Loop through particles
     print('Calculating He Ages...')
     for k,particle in enumerate(tqdm(ids)):
         if particle in particles:
             # Get Tt path
-            tt = get_tt_path(meshes,particle.astype(int),
+            tt = get_tt_path(all_ids,all_temps,particle.astype(int),
                                      disable_tqdm=True)
             
             # Model age
@@ -363,18 +366,17 @@ def particle_trace(meshes,timesteps,point,y_field,x_field='time',
         
     return(point_df)
 
-def get_tt_path(meshes,point,disable_tqdm=True):
+def get_tt_path(all_ids,all_temps,point,disable_tqdm=True):
     
     # Loop over files
     if disable_tqdm==False:
         print('Finding Tt path...')
       
-    tt = np.zeros(len(meshes))
+    tt = np.zeros(len(all_temps))
     
-    for k,mesh in enumerate(tqdm(meshes,disable=disable_tqdm)):
+    for k,temps in enumerate(tqdm(all_temps,disable=disable_tqdm)):
         
-        ids = mesh.point_data['id'] # Get particle ids
-        temps = mesh.point_data['T'] # Get temperatures
+        ids = all_ids[k] # Get particle ids
         
         # Get temp for particular id
         temp = temps[ids==point]
@@ -382,6 +384,19 @@ def get_tt_path(meshes,point,disable_tqdm=True):
         tt[k] = temp
         
     return(tt)
+
+def extract_temps(meshes):
+    
+    all_ids = []
+    all_temps = []
+    for mesh in meshes:
+        mesh_ids = mesh.point_data['id']
+        mesh_temps = mesh.point_data['T']
+        
+        all_ids.append(mesh_ids)
+        all_temps.append(mesh_temps)
+    
+    return(all_ids,all_temps)
     
 
 def get_pvtu(directory,timesteps,kind='solution'):
