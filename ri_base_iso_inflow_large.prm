@@ -33,15 +33,15 @@ subsection Adiabatic conditions model
   end
 end
 
-# Model geometry (1000x400 km, 4 km spacing)
+# Model geometry (1200x600 km, 4 km spacing)
 subsection Geometry model
   set Model name = box
   subsection Box
-    set X repetitions = 250
-    set Y repetitions = 100
+    set X repetitions = 300
+    set Y repetitions = 150
 
-    set X extent      = 1000e3
-    set Y extent      = 400e3
+    set X extent      = 1200e3
+    set Y extent      = 600e3
 
   end
 end
@@ -106,7 +106,7 @@ subsection Boundary velocity model
 
   subsection Function
     set Variable names      = x,y
-    set Function constants  = v=XXX, d=400.e3, w=1000.e3, p1=150.e3, p2=250.e3, s=XXX
+    set Function constants  = v=XXX, d=600.e3, w=1200.e3, p1=150.e3, p2=250.e3, s=XXX
     set Function expression = if( x<w/2., \
                                   if ( y>p1, \
                                        -v, \
@@ -180,7 +180,7 @@ subsection Initial temperature model
   end
   subsection Function
     set Variable names = x,y
-    set Function constants = h=400.e3,ts1=XXX,ts2=XXX,ts3=XXX,ts4=XXX,ast=1573, \
+    set Function constants = h=600.e3,ts1=XXX,ts2=XXX,ts3=XXX,ts4=XXX,ast=1573, \
                              A1=1.e-6,A2=0.25e-6,A3=0.0, \
                              k1=2.5,k2=2.5,k3=2.5, \
                              qs1=XXX,qs2=XXX,qs3=XXX
@@ -279,12 +279,12 @@ set List of postprocessors = basic statistics, composition statistics, heat flux
     set Interpolation scheme        = bilinear least squares
     set Update ghost particles      = true
     set Particle generator name     = random uniform
-    set Time between data output    = 100.e3
+    set Time between data output    = 500.e3
     set Data output format          = vtu
   end
   subsection Visualization
     set List of output variables      = adiabat, density, heat flux map, named additional outputs, strain rate, viscosity
-    set Time between graphical output = 100.e3
+    set Time between graphical output = 500.e3
     set Interpolate output            = false
     set Write higher order output     = false
     set Output format                 = vtu
@@ -293,7 +293,7 @@ set List of postprocessors = basic statistics, composition statistics, heat flux
   end
   subsection Topography
     set Output to file           = true
-    set Time between text output = 100.e3
+    set Time between text output = 500.e3
   end
 end
 

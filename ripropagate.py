@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def lthickness(text,lthick):
+def lthickness(text,lthick,depth=400):
     """
     Replace thermal values and other parameters to alter lithosphere thickness
     
@@ -22,7 +22,7 @@ def lthickness(text,lthick):
     
     # Read in thermal values from csv
     thick_str = str(lthick)+'km' # String version of thickness  
-    csv = 'thermal_'+thick_str+'.csv'
+    csv = 'thermal_' + str(lthick) + '_' + str(depth) + '.csv'
     thermal = pd.read_csv(csv,index_col=0).squeeze().to_dict()
     
     base = 'XXX' # Dummy value in in base file
@@ -130,7 +130,7 @@ def strain_softening(text,value):
     
     return(text)
     
-def generate(file='ri_base.prm',lthick=100,evel=1,etime=50,soft=0.333,output='.',
+def generate(file='ri_base.prm',lthick=100,depth=400,evel=1,etime=50,soft=0.333,output='.',
              shell='run_base.sh',ver=''):
     """
     Generate .prm file from dummy base file.

@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 from riftinversion.tchron import tchron as tc
 
-def plot2D(file,field,bounds,ax=None,contours=False,
+def plot2D(file,field,bounds,ax=None,contours=False,cbar=False,
          cfields=['crust_upper','crust_lower','mantle_lithosphere'],
          null_field='asthenosphere',**kwargs):
     """
@@ -49,6 +49,12 @@ def plot2D(file,field,bounds,ax=None,contours=False,
     
     pv.set_plot_theme("document")
     plotter = pv.Plotter(off_screen=True)
+    
+    if cbar==True:
+        # Format color bar
+         pv.global_theme.colorbar_horizontal.height = 0.2
+         pv.global_theme.colorbar_horizontal.position_x = 0.61
+         pv.global_theme.colorbar_horizontal.position_y = 0.71     
     
     plotter.add_mesh(mesh,scalars=field,**kwargs)
     
