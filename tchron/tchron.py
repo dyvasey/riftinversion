@@ -599,13 +599,18 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=513,
 def interpolate(x,y,age,**kwargs):
     all_parts = (x,y)
     
+    
+    
     known_x = x[~np.isnan(age)]
     known_y = y[~np.isnan(age)]
     knowns = (known_x,known_y)
     
     known_ages = age[~np.isnan(age)]
     
-    filled_grid = griddata(knowns,known_ages,all_parts,**kwargs)
+    # Make negative ages 0
+    positive_ages = np.where(known_ages>0,known_ages,0)
+    
+    filled_grid = griddata(knowns,positive_ages,all_parts,**kwargs)
     
     return(filled_grid)
         
