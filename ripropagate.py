@@ -35,6 +35,11 @@ def lthickness(text,lthick,depth=400):
         new = param+'='+str(round(thermal[param],5))
         text = text.replace(old,new)
     
+    # Replace bottom temperature
+    bottom_old = 'set Bottom temperature = XXX'
+    bottom_new = 'set Bottom temperature = ' + str(round(thermal['base'],None))
+    text = text.replace(bottom_old,bottom_new)
+    
     # Replace Adiabatic function expression
     text = text.replace('x>XXX','x>'+str(lthick)+'.e3')
     
