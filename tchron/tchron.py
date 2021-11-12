@@ -1,11 +1,14 @@
 """
 Functions for forward modeling of thermochronometric ages
 """
+import warnings
+
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 from scipy.integrate import romb,romberg
 from scipy.linalg import solve_banded
+from scipy.interpolate import griddata
 
 def tridiag(a, b, c, diag_length):
     """
@@ -389,6 +392,8 @@ def calculate_age(He_molg,U238_molg,U235_molg,Th_molg):
     
         return(root)
     
+    warnings.filterwarnings('ignore','The iteration is not making good progress')
+    
     age = float(fsolve(age_equation,1e6))
     age_Ma = age/1e6
     
@@ -590,6 +595,19 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=513,
     position_normalized = node_positions/radius
     
     return(age_corrected,volumes_normalized,position_normalized)
+
+def interpolate(x,y,age,**kwargs):
+    all_parts = (x,y)
+    
+    known_x = x[~np.isnan(age)]
+    known_y = y[~np.isnan(age)]
+    knowns = (known_x,known_y)
+    
+    known_ages = age[~np.isnan(age)]
+    
+    filled_grid = griddata(knowns,known_ages,all_parts,**kwargs)
+    
+    return(filled_grid)
         
         
         

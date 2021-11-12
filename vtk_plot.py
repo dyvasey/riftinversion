@@ -2,12 +2,15 @@
 Functions for plotting data from VTU/PVTU files.
 """
 import os
+import multiprocessing
+from functools import partial
 
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
 from tqdm import tqdm
+from joblib import Parallel,delayed
 
 from riftinversion.tchron import tchron as tc
 
@@ -240,8 +243,10 @@ def He_age_vtk(meshes,system,time_interval,filename='mesh_He.vtu',
     # Extract ids and temps for each mesh
     all_ids,all_temps = extract_temps(meshes)
     
-    # Loop through particles
     print('Calculating He Ages...')
+    
+    # Loop through particles
+    
     for k,particle in enumerate(tqdm(ids)):
         if particle in particles:
             # Get Tt path
@@ -264,6 +269,59 @@ def He_age_vtk(meshes,system,time_interval,filename='mesh_He.vtu',
     final_mesh.save(filename)
     
     return(final_mesh)
+
+def He_age_vtk_parallel(meshes,system,time_interval,filename='mesh_He.vtu',
+               U=100,Th=100,radius=50):
+    
+    # Isolate final mesh
+    final_mesh = meshes[-1]
+    
+    # Get all particle ids for final mesh
+    ids = pv.point_array(final_mesh,'id')
+    
+    # Get particles that appear in all meshes
+    particles = allmeshes_particles(meshes)
+    
+    # Extract ids and temps for each mesh
+    all_ids,all_temps = extract_temps(meshes)
+    
+    inputs = (particles,all_ids,all_temps,U,Th,radius,time_interval,system)
+    
+    print('Calculating He Ages...')
+    processes = os.cpu_count()-2
+    batch_size = round(len(ids)/processes/10)
+    print('Processes: ',processes)
+    print('Batch Size: ',batch_size)
+    output = (
+        Parallel(n_jobs=processes,batch_size=batch_size,pre_dispatch=2*batch_size)
+        (delayed(parallel_He_age)(particle,inputs) for particle in tqdm(ids))
+        )
+
+    # Assign array to mesh and return mesh
+    final_mesh.point_data[system] = output
+    
+    # Save mesh to file
+    final_mesh.save(filename)
+    
+    return(final_mesh)
+
+def parallel_He_age(particle,inputs):
+    
+    particles,all_ids,all_temps,U,Th,radius,time_interval,system = inputs
+    
+    if particle in particles:
+        # Get Tt path
+        tt = get_tt_path(all_ids,all_temps,particle.astype(int),
+                                 disable_tqdm=True)
+        
+        # Model age
+        age,vol,pos = tc.forward_model(
+            U,Th,radius,tt,time_interval,system=system,
+            print_age=False)
+    else:
+        age = np.nan
+        
+    return(age)
     
 
 def particle_trace(meshes,timesteps,point,y_field,x_field='time',
@@ -481,7 +539,8 @@ def particle_positions(meshes,timestep,bounds=None):
     df = pd.DataFrame(data=positions,index=ids)
     return(df)
 
-def load_particle_meshes(directory,timesteps,filename='meshes.vtm',bounds=None):
+def load_particle_meshes(directory,timesteps,filename='meshes.vtm',bounds=None,
+                         parallel=True):
     """
     Load particle meshes, clip, and save to avoid duplicate computation. This is
     computationally intensive for large meshes and may be preferred to do on 
@@ -502,25 +561,45 @@ def load_particle_meshes(directory,timesteps,filename='meshes.vtm',bounds=None):
     # Set up directory building blocks
     files=get_pvtu(directory,timesteps,kind='particles')
     
-    # Setup multiblock
-    meshes = pv.MultiBlock()
-    
-    print('Loading and Clipping Meshes...')
-    for file in tqdm(files):
-        mesh = pv.read(file) # Major computation to load this.
-    
-        # Clip mesh to save space
-        if bounds is not None:
-            km2m = 1000
-            bounds_m = [bound*km2m for bound in bounds]
-            mesh = mesh.clip_box(bounds=bounds_m,invert=False)
+
+    if parallel == True:
+        print('Loading and Clipping Meshes...')
+        processes = os.cpu_count()-6
+        print('Processes: ',processes)
         
-        meshes.append(mesh)
-        
-    # Save clipped meshes as smaller file to work with
-    meshes.save(filename)
+        meshes = Parallel(n_jobs=processes,require='sharedmem')(
+            delayed(loadclip_parallel)(file,bounds) for file in tqdm(files)
+            )
     
+        #meshes = pv.MultiBlock(mesh_list)
+    
+    else:
+        meshes = pv.MultiBlock()
+        for file in tqdm(files):
+            mesh = pv.read(file) # Major computation to load this.
+        
+            # Clip mesh to save space
+            if bounds is not None:
+                km2m = 1000
+                bounds_m = [bound*km2m for bound in bounds]
+                mesh = mesh.clip_box(bounds=bounds_m,invert=False)
+            
+            meshes.append(mesh)
+            
+            # Save clipped meshes as smaller file to work with
+            meshes.save(filename)
+        
     return(meshes)
+
+def loadclip_parallel(file,bounds):
+    mesh = pv.read(file)
+    
+    if bounds is not None:
+        km2m = 1000
+        bounds_m = [bound*km2m for bound in bounds]
+        mesh = mesh.clip_box(bounds=bounds_m,invert=False)
+    
+    return(mesh)
 
 def allmeshes_particles(meshes):
     """
