@@ -52,12 +52,7 @@ def plot2D(file,field,bounds,ax=None,contours=False,cbar=False,
     
     pv.set_plot_theme("document")
     plotter = pv.Plotter(off_screen=True)
-    
-    if cbar==True:
-        # Format color bar
-         pv.global_theme.colorbar_horizontal.height = 0.2
-         pv.global_theme.colorbar_horizontal.position_x = 0.61
-         pv.global_theme.colorbar_horizontal.position_y = 0.71     
+
     
     plotter.add_mesh(mesh,scalars=field,**kwargs)
     
@@ -65,7 +60,16 @@ def plot2D(file,field,bounds,ax=None,contours=False,cbar=False,
         plotter.add_mesh(cntrs,color='black',line_width=5)
     
     plotter.view_xy()
-    plotter.remove_scalar_bar()
+    
+    if cbar==True:
+        # Format color bar
+         pv.global_theme.colorbar_horizontal.height = 0.2
+         pv.global_theme.colorbar_horizontal.position_x = 0.61
+         pv.global_theme.colorbar_horizontal.position_y = 0.71
+         pv.global_theme.font.size = 12
+    else:
+        plotter.remove_scalar_bar()
+
 
     # Calculate Camera Position from Bounds
     bounds_array = np.array(bounds_m)
@@ -271,7 +275,7 @@ def He_age_vtk(meshes,system,time_interval,filename='mesh_He.vtu',
     return(final_mesh)
 
 def He_age_vtk_parallel(meshes,system,time_interval,filename='mesh_He.vtu',
-               U=100,Th=100,radius=50):
+               U=100,Th=100,radius=50,batch_size=4000):
     
     # Isolate final mesh
     final_mesh = meshes[-1]
@@ -289,7 +293,7 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='mesh_He.vtu',
     
     print('Calculating He Ages...')
     processes = os.cpu_count()-2
-    batch_size = round(len(ids)/processes/10)
+    # batch_size = round(len(ids)/processes/10)
     print('Processes: ',processes)
     print('Batch Size: ',batch_size)
     output = (
@@ -540,7 +544,7 @@ def particle_positions(meshes,timestep,bounds=None):
     return(df)
 
 def load_particle_meshes(directory,timesteps,filename='meshes.vtm',bounds=None,
-                         parallel=True):
+                         parallel=True,kind='particles'):
     """
     Load particle meshes, clip, and save to avoid duplicate computation. This is
     computationally intensive for large meshes and may be preferred to do on 
@@ -559,7 +563,7 @@ def load_particle_meshes(directory,timesteps,filename='meshes.vtm',bounds=None,
     """
     
     # Set up directory building blocks
-    files=get_pvtu(directory,timesteps,kind='particles')
+    files=get_pvtu(directory,timesteps,kind=kind)
     
 
     if parallel == True:
