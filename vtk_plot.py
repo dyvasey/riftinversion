@@ -11,6 +11,7 @@ import numpy as np
 import pyvista as pv
 from tqdm import tqdm
 from joblib import Parallel,delayed
+from scipy.spatial import KDTree
 
 from riftinversion.tchron import tchron as tc
 
@@ -275,34 +276,77 @@ def He_age_vtk(meshes,system,time_interval,filename='mesh_He.vtu',
     return(final_mesh)
 
 def He_age_vtk_parallel(meshes,system,time_interval,filename='mesh_He.vtu',
-               U=100,Th=100,radius=50,batch_size=4000):
+               U=100,Th=100,radius=50,batch_size=4000,He_profile_nodes=513):
     
     # Isolate final mesh
     final_mesh = meshes[-1]
     
     # Get all particle ids for final mesh
-    ids = pv.point_array(final_mesh,'id')
+    final_ids = pv.point_array(final_mesh,'id')
     
     # Get particles that appear in all meshes
-    particles = allmeshes_particles(meshes)
+    # particles = allmeshes_particles(meshes)
     
-    # Extract ids and temps for each mesh
-    all_ids,all_temps = extract_temps(meshes)
-    
-    inputs = (particles,all_ids,all_temps,U,Th,radius,time_interval,system)
+    # Extract ids, temps, and positions for each mesh
+    all_ids,all_temps,all_positions = extract_temps_positions(meshes)
     
     print('Calculating He Ages...')
     processes = os.cpu_count()-2
-    # batch_size = round(len(ids)/processes/10)
     print('Processes: ',processes)
     print('Batch Size: ',batch_size)
-    output = (
-        Parallel(n_jobs=processes,batch_size=batch_size,pre_dispatch=2*batch_size)
-        (delayed(parallel_He_age)(particle,inputs) for particle in tqdm(ids))
-        )
-
+    
+    # Loop through timesteps
+    for k,temps in enumerate(all_temps):
+        positions = all_positions[k]
+        ids = all_ids[k]
+        
+        new_profiles = np.empty((len(ids),He_profile_nodes))
+        
+        # Make initial He profiles all None
+        if k==0:
+            new_profiles.fill(np.nan)
+        
+        else:  
+            old_ids = all_ids[k-1] # Get ids for previous profiles
+            for n,part in enumerate(ids):
+                # Get new value in array format
+                array = He_profiles[part==old_ids]
+                
+                # If array is empty, assign np.nan to new value
+                if array.size == 0:
+                    new_profiles[n,:] = np.nan
+                # Otherwise, assign new value
+                else:
+                    new_profiles[n,:] = array 
+        print('New Profile Shape: ',new_profiles.shape)
+        
+        inputs = (positions,ids,temps,new_profiles,U,Th,radius,time_interval,
+                  system,He_profile_nodes)
+            
+        # Calculate ages on last timestep
+        if k==len(all_temps)-1:
+            calc_age=True
+        else:
+            calc_age=False
+        
+        try:
+        
+            He_profiles = np.array(
+                Parallel(n_jobs=processes,batch_size=batch_size,pre_dispatch=2*batch_size)
+                (delayed(particle_He_profile)(particle,inputs,calc_age) for particle in tqdm(ids))
+                )
+        
+        except:
+            print('Booty')
+            print(k)
+            print(He_profiles.size)
+            print(ids.size)
+            raise
+        
+        print(ids.size)
+    
     # Assign array to mesh and return mesh
-    final_mesh.point_data[system] = output
+    final_mesh.point_data[system] = He_profiles
     
     # Save mesh to file
     final_mesh.save(filename)
@@ -326,6 +370,51 @@ def parallel_He_age(particle,inputs):
         age = np.nan
         
     return(age)
+
+def particle_He_profile(particle,inputs,calc_age):
+    
+    # Unpack inputs
+    (positions,ids,temps,He_profiles,U,Th,radius,time_interval,system,
+     He_profile_nodes) = inputs
+    
+    # Get particle temperature
+    particle_temp = temps[ids==particle]
+       
+    # If particle not found, don't attempt to calculate profile
+    if particle_temp.size == 0:            
+        x = np.nan
+        return(x)
+    
+    # Get input particle He profile
+    profile = He_profiles[ids==particle][0]
+    
+    # Use previous He from nearest neighbor if none previously present
+    
+    try:
+        if np.all(np.isnan(profile)):
+            particle_position = positions[ids==particle]
+            distance,index = KDTree(positions).query(particle_position)
+            profile = He_profiles[index][0]
+    
+    except:
+        print('monkey')
+        print(profile.size)
+        print('Profile type: ',type(profile))
+        raise
+    
+    if calc_age==True:
+        age,vol,pos = tc.forward_model(U,Th,radius,particle_temp,time_interval,system,
+                             initial_He=profile,calc_age=True,print_age=False,
+                             nodes=He_profile_nodes)
+        return(age)
+        
+    else:    
+        x = tc.forward_model(U,Th,radius,particle_temp,time_interval,system,
+                             initial_He=profile,calc_age=False,print_age=False,
+                             nodes=He_profile_nodes)
+        
+        return(x)
+    
     
 
 def particle_trace(meshes,timesteps,point,y_field,x_field='time',
@@ -453,18 +542,21 @@ def get_tt_path(all_ids,all_temps,point,disable_tqdm=True):
         
     return(tt)
 
-def extract_temps(meshes):
+def extract_temps_positions(meshes):
     
     all_ids = []
     all_temps = []
+    all_positions = []
     for mesh in meshes:
         mesh_ids = mesh.point_data['id']
         mesh_temps = mesh.point_data['T']
+        mesh_positions = mesh.points
         
         all_ids.append(mesh_ids)
         all_temps.append(mesh_temps)
+        all_positions.append(mesh_positions)
     
-    return(all_ids,all_temps)
+    return(all_ids,all_temps,all_positions)
     
 
 def get_pvtu(directory,timesteps,kind='solution'):
