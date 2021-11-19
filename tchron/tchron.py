@@ -463,7 +463,7 @@ def model_alpha_ejection(node_positions,stopping_distance,radius):
     return(retained_fractions_edge)
 
 def forward_model(U,Th,radius,temps,time_interval,system,nodes=513,
-                  print_age=True):
+                  initial_He=np.nan,calc_age=True,print_age=True):
     """
     Forward model a (U-Th)/He age for a particular time-temperature path.
     
@@ -503,10 +503,39 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=513,
     # Get parameters for the appropriate mineral
     freq_factor,activ_energy,stop_distances = get_parameters(system)
     
-    
-    # Get mol/g of U,Th and account for alpha ejection
+    # Get mol/g of U,Th
     U238_molg,U235_molg,Th_molg = UTh_ppm2molg(U,Th)
     
+    # Package parameters to pass to He profile
+    
+    node_information = (nodes,node_spacing,node_positions)
+    UTh_molg = (U238_molg,U235_molg,Th_molg)
+    system_parameters = (freq_factor,activ_energy,stop_distances)
+    
+    # Calculate He profile
+    x = He_profile(temps,time_interval,node_information,radius,UTh_molg,
+                   system_parameters,initial_He)
+    
+    if calc_age==True:
+    
+        # Calculate corrected age age
+        age,vol,pos = profile2age(x,node_positions,radius,nodes,UTh_molg,
+                                  stop_distances,print_age)
+        
+        return(age,vol,pos)
+    
+    else:
+        return(x)
+
+def He_profile(temps,time_interval,node_information,radius,UTh_molg,
+               system_parameters,initial_He=np.nan):    
+    
+    # Unpack parameters
+    nodes,node_spacing,node_positions = node_information
+    U238_molg,U235_molg,Th_molg = UTh_molg
+    freq_factor,activ_energy,stop_distances = system_parameters
+
+    # Modify mol/g of U,Th for alpha ejection
     U238_alpha = (
         U238_molg*model_alpha_ejection(node_positions,stop_distances[0],
                                                 radius)
@@ -525,20 +554,22 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=513,
     # Calculate He production based on U and Th, adjusted for alpha ejection.
     He_production = calculate_He_production_rate(U238_alpha,U235_alpha,Th_alpha)
     
-    # Set initial x (He) equal to 0 for first timestep
-    x = np.zeros(nodes)
+    if np.all(np.isnan(initial_He)):
+        # Set initial x (He) equal to 0
+        x = np.zeros(nodes)
+    else:
+        x = initial_He
     
-    # Loop through each step of the T-t path, starting with the second
-    # temperature
+    # Loop through each step of the T-t path
     
-    for k,temp in enumerate(temps):
+    for temp in temps:
         
         # Use temperature to calculate diffusivity and beta
         
         diffusivity = calculate_diffusivity(temp,freq_factor,activ_energy)
         beta = calculate_beta(diffusivity,node_spacing, time_interval)
         
-       # Calculate new A (banded) and use x to calculate new B
+       # Calculate A (banded) and use x to calculate new B
 
         AB = tridiag_banded(1,-2-beta,1,nodes)
         AB[1,0]=-3-beta # Following Guenthner Matlab script - Neumann
@@ -548,7 +579,7 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=513,
             # For first node, use boundary condition (Neumann)
             if j==0:
                 B[j] = (
-                    x[j] + (2-beta)*x[j] - x[j+1] # Guenthner Matlab script
+                    x[j] + (2-beta)*x[j] - x[j+1]
                     - He_production[j]*node_positions[j]*beta*time_interval
                     )
                 
@@ -568,8 +599,15 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=513,
         # Solve for x using banded A and B
         x = solve_banded((1,1),AB,B)
         
+    return(x)
+
+def profile2age(x,node_positions,radius,nodes,UTh_molg,stop_distances,
+                print_age=True,):
+        
     He_molg,volumes = sum_He_shells(x,node_positions,radius,nodes,
                                     print_He=print_age)
+    
+    U238_molg,U235_molg,Th_molg = UTh_molg
     
     # Because alpha ejection modeled, model age is an "uncorrected" age.
     age_uncorrected = calculate_age(He_molg,U238_molg,U235_molg,Th_molg)
