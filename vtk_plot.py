@@ -281,12 +281,6 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='mesh_He.vtu',
     # Isolate final mesh
     final_mesh = meshes[-1]
     
-    # Get all particle ids for final mesh
-    final_ids = pv.point_array(final_mesh,'id')
-    
-    # Get particles that appear in all meshes
-    # particles = allmeshes_particles(meshes)
-    
     # Extract ids, temps, and positions for each mesh
     all_ids,all_temps,all_positions = extract_temps_positions(meshes)
     
@@ -310,23 +304,6 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='mesh_He.vtu',
             old_ids = np.ones(len(ids))*np.nan
             old_positions = np.ones(len(ids))*np.nan
         
-        # Make new He profiles all None
-        #new_profiles = np.empty((len(ids),He_profile_nodes))
-        #new_profiles.fill(np.nan)
-        
-            
-            #for n,part in enumerate(ids):
-                # Get new value in array format
-            #    array = He_profiles[part==old_ids]
-                
-                # If array is empty, assign np.nan to new value
-            #    if array.size == 0:
-            #        new_profiles[n,:] = np.nan
-            #    # Otherwise, assign new value
-            #    else:
-            #        new_profiles[n,:] = array 
-        # print('New Profile Shape: ',new_profiles.shape)
-        
         inputs = (k,positions,old_positions,ids,old_ids,temps,old_profiles,
                   U,Th,radius,time_interval,
                   system,He_profile_nodes)
@@ -342,8 +319,6 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='mesh_He.vtu',
             Parallel(n_jobs=processes,batch_size=batch_size,pre_dispatch=2*batch_size)
             (delayed(particle_He_profile)(particle,inputs,calc_age) for particle in tqdm(ids))
             )
-        
-        #new_profiles = np.array([particle_He_profile(particle,inputs,calc_age) for particle in tqdm(ids)])
     
     # Assign array to mesh and return mesh
     final_mesh.point_data[system] = new_profiles
@@ -400,42 +375,30 @@ def particle_He_profile(particle,inputs,calc_age):
 
         return(x)
     
-    # Get input particle He profile
-    # profile = He_profiles[ids==particle][0]
-    
     # Use previous He from nearest neighbor if none previously present
     
-    try:
-        if (k>0) & (np.all(np.isnan(profile))):
-            
-            # Get particle position
-            particle_position = positions[ids==particle]
-            
-            # Get particle ids of particles with profiles
-            hasprofile = ~np.isnan(old_profiles).all(axis=1)
-            other_particles = old_ids[hasprofile]
-            
-            # Get positions of other particles
-            other_positions = old_positions[hasprofile]
-            
-            # Find closest particle
-            distance,index = KDTree(other_positions).query(particle_position)
-            
-            # Get id of closest particle
-            neighbor_id = other_particles[index]
-            
-            # Get profile of closest particle
-            profile = old_profiles[neighbor_id==old_ids]
-    
-    except:
-        print('monkey')
-        print(profile)
-        print()
-        print('Profile type: ',type(profile))
-        raise
+    if (k>0) & (np.all(np.isnan(profile))):
+        
+        # Get particle position
+        particle_position = positions[ids==particle]
+        
+        # Get particle ids of particles with profiles
+        hasprofile = ~np.isnan(old_profiles).all(axis=1)
+        other_particles = old_ids[hasprofile]
+        
+        # Get positions of other particles
+        other_positions = old_positions[hasprofile]
+        
+        # Find closest particle
+        distance,index = KDTree(other_positions).query(particle_position)
+        
+        # Get id of closest particle
+        neighbor_id = other_particles[index]
+        
+        # Get profile of closest particle
+        profile = old_profiles[neighbor_id==old_ids]
     
     if calc_age==True:
-        print('Calculated Age')
         age,vol,pos = tc.forward_model(U,Th,radius,particle_temp,time_interval,system,
                              initial_He=profile.flatten(),calc_age=True,print_age=False,
                              nodes=He_profile_nodes)
@@ -443,7 +406,6 @@ def particle_He_profile(particle,inputs,calc_age):
         return(age)
         
     else:    
-        print('Calculated Profile')
         x = tc.forward_model(U,Th,radius,particle_temp,time_interval,system,
                              initial_He=profile.flatten(),calc_age=False,print_age=False,
                              nodes=He_profile_nodes)
