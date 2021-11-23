@@ -3,7 +3,7 @@ Second test of age and diffusion profile from Ketcham, 2005.
 """
 import numpy as np
 import matplotlib.pyplot as plt
-from riftinversion.tchron import tchron as tc
+from tchron import tchron as tc
 
 age_ketcham = 7.12
 

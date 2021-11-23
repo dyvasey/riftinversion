@@ -2,8 +2,6 @@
 Functions for plotting data from VTU/PVTU files.
 """
 import os
-import multiprocessing
-from functools import partial
 
 import pandas as pd
 import matplotlib.pyplot as plt
