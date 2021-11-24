@@ -11,7 +11,7 @@ from tqdm import tqdm
 from joblib import Parallel,delayed
 from scipy.spatial import KDTree
 
-from riftinversion.tchron import tchron as tc
+from tchron import tchron as tc
 
 def plot2D(file,field,bounds,ax=None,contours=False,cbar=False,
          cfields=['crust_upper','crust_lower','mantle_lithosphere'],
@@ -274,7 +274,8 @@ def He_age_vtk(meshes,system,time_interval,filename='mesh_He.vtu',
     return(final_mesh)
 
 def He_age_vtk_parallel(meshes,system,time_interval,filename='mesh_He.vtu',
-               U=100,Th=100,radius=50,batch_size=4000,He_profile_nodes=513):
+               U=100,Th=100,radius=50,batch_size=4000,processes=os.cpu_count()-2,
+               He_profile_nodes=513):
     
     # Isolate final mesh
     final_mesh = meshes[-1]
@@ -283,9 +284,14 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='mesh_He.vtu',
     all_ids,all_temps,all_positions = extract_temps_positions(meshes)
     
     print('Calculating He Ages...')
-    processes = os.cpu_count()-2
+    if batch_size == 'auto':
+        pre_dispatch = 2*processes
+    else:
+        pre_dispatch = 2*batch_size
+    
     print('Processes: ',processes)
     print('Batch Size: ',batch_size)
+    print('Pre-Dispatch: ',pre_dispatch)
     
     # Loop through timesteps
     for k,temps in enumerate(all_temps):
@@ -313,8 +319,10 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='mesh_He.vtu',
             calc_age=False
         
         print('Caluclating Profiles for Timestep ',k,'...')
+
+        
         new_profiles = np.array(
-            Parallel(n_jobs=processes,batch_size=batch_size,pre_dispatch=2*batch_size)
+            Parallel(n_jobs=processes,batch_size=batch_size,pre_dispatch=pre_dispatch)
             (delayed(particle_He_profile)(particle,inputs,calc_age) for particle in tqdm(ids))
             )
     
