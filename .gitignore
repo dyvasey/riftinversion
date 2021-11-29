@@ -10,3 +10,4 @@ composition.txt
 !lab_notebooks_archived/
 !tchron/
 !tchron/tests/
+!sample_data/*
