@@ -230,7 +230,9 @@ def comp_field_vtk(mesh,fields=['crust_upper','crust_lower','mantle_lithosphere'
 
 def He_age_vtk(meshes,system,time_interval,filename='mesh_He.vtu',
                U=100,Th=100,radius=50):
-    
+    """
+    Deprecated in favor of He_age_vtk_parallel
+    """
     # Isolate final mesh
     final_mesh = meshes[-1]
     
@@ -274,8 +276,8 @@ def He_age_vtk(meshes,system,time_interval,filename='mesh_He.vtu',
     return(final_mesh)
 
 def He_age_vtk_parallel(meshes,system,time_interval,filename='mesh_He.vtu',
-               U=100,Th=100,radius=50,batch_size=4000,processes=os.cpu_count()-2,
-               He_profile_nodes=513):
+               U=100,Th=100,radius=50,batch_size=100,processes=os.cpu_count()-2,
+               He_profile_nodes=513,interpolate_profile=True):
     
     # Isolate final mesh
     final_mesh = meshes[-1]
@@ -323,7 +325,8 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='mesh_He.vtu',
         
         new_profiles = np.array(
             Parallel(n_jobs=processes,batch_size=batch_size,pre_dispatch=pre_dispatch)
-            (delayed(particle_He_profile)(particle,inputs,calc_age) for particle in tqdm(ids))
+            (delayed(particle_He_profile)
+             (particle,inputs,calc_age,interpolate_profile) for particle in tqdm(ids))
             )
     
     # Assign array to mesh and return mesh
@@ -335,7 +338,9 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='mesh_He.vtu',
     return(final_mesh)
 
 def parallel_He_age(particle,inputs):
-    
+    """
+    Deprecated in favor of particle_He_profile
+    """
     particles,all_ids,all_temps,U,Th,radius,time_interval,system = inputs
     
     if particle in particles:
@@ -352,7 +357,7 @@ def parallel_He_age(particle,inputs):
         
     return(age)
 
-def particle_He_profile(particle,inputs,calc_age):
+def particle_He_profile(particle,inputs,calc_age,interpolate_profile):
     
     # Unpack inputs
     (k,positions,old_positions,ids,old_ids,temps,old_profiles,
@@ -381,28 +386,42 @@ def particle_He_profile(particle,inputs,calc_age):
 
         return(x)
     
-    # Use previous He from nearest neighbor if none previously present
+    # Use previous He from nearest neighbor in previous timestep if none present
     
     if (k>0) & (np.all(np.isnan(profile))):
         
-        # Get particle position
-        particle_position = positions[ids==particle]
+        if interpolate_profile==True:
         
-        # Get particle ids of particles with profiles
-        hasprofile = ~np.isnan(old_profiles).all(axis=1)
-        other_particles = old_ids[hasprofile]
+            # Get particle position
+            particle_position = positions[ids==particle]
+            
+            # Get particle ids of particles with profiles
+            hasprofile = ~np.isnan(old_profiles).all(axis=1)
+            other_particles = old_ids[hasprofile]
+            
+            # Get positions of other particles
+            other_positions = old_positions[hasprofile]
+            
+            # Find closest particle
+            distance,index = KDTree(other_positions).query(particle_position)
+            
+            # Get id of closest particle
+            neighbor_id = other_particles[index]
+            
+            # Get profile of closest particle
+            profile = old_profiles[neighbor_id==old_ids]
+            print('Interpolated Profile')
         
-        # Get positions of other particles
-        other_positions = old_positions[hasprofile]
+        # If turned off, return original profile of np.nan
+        elif (interpolate_profile==False) & calc_age==False:
+            x = np.empty(He_profile_nodes)
+            x.fill(np.nan)
+            return(x)
         
-        # Find closest particle
-        distance,index = KDTree(other_positions).query(particle_position)
-        
-        # Get id of closest particle
-        neighbor_id = other_particles[index]
-        
-        # Get profile of closest particle
-        profile = old_profiles[neighbor_id==old_ids]
+        # Or return blank age if calculate age is on
+        elif (interpolate_profile==False) & calc_age==True:
+            age = np.nan
+            return(age)
     
     if calc_age==True:
         age,vol,pos = tc.forward_model(U,Th,radius,particle_temp,time_interval,system,
