@@ -275,7 +275,7 @@ def He_age_vtk(meshes,system,time_interval,filename='mesh_He.vtu',
     
     return(final_mesh)
 
-def He_age_vtk_parallel(meshes,system,time_interval,filename='mesh_He.vtu',
+def He_age_vtk_parallel(meshes,system,time_interval,filename='meshes_He.vtm',
                U=100,Th=100,radius=50,batch_size=100,processes=os.cpu_count()-2,
                He_profile_nodes=513,interpolate_profile=True):
     
@@ -332,13 +332,13 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='mesh_He.vtu',
         ages = [pair[0]for pair in output]
         new_profiles = np.array([pair[1]for pair in output])
     
-    # Assign array to mesh and return mesh
-    final_mesh.point_data[system] = ages
+        # Assign ages to mesh
+        meshes[k].point_data[system] = ages
     
-    # Save mesh to file
-    final_mesh.save(filename)
+    # Save modified multiblock
+    meshes.save(filename)
     
-    return(final_mesh)
+    return(meshes)
 
 def parallel_He_age(particle,inputs):
     """
