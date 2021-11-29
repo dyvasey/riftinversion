@@ -10,4 +10,5 @@ composition.txt
 !lab_notebooks_archived/
 !tchron/
 !tchron/tests/
-!sample_data/*
+!sample_data/
+!sample_data/vtk_tchron_test/
