@@ -1,0 +1,16 @@
+name: aspect
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pandas
+  - jupyter
+  - numpy
+  - tqdm
+  - spyder
+  - matplotlib
+  - pyvista
+  - scipy
+  - joblib
+  - conda-build
+prefix: C:\Users\dyvas\miniconda3\envs\aspect
