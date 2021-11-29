@@ -323,14 +323,17 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='mesh_He.vtu',
         print('Caluclating Profiles for Timestep ',k,'...')
 
         
-        new_profiles = np.array(
+        output = (
             Parallel(n_jobs=processes,batch_size=batch_size,pre_dispatch=pre_dispatch)
             (delayed(particle_He_profile)
              (particle,inputs,calc_age,interpolate_profile) for particle in tqdm(ids))
             )
+        
+        ages = [pair[0]for pair in output]
+        new_profiles = np.array([pair[1]for pair in output])
     
     # Assign array to mesh and return mesh
-    final_mesh.point_data[system] = new_profiles
+    final_mesh.point_data[system] = ages
     
     # Save mesh to file
     final_mesh.save(filename)
@@ -379,12 +382,13 @@ def particle_He_profile(particle,inputs,calc_age,interpolate_profile):
     # Get particle temperature
     particle_temp = temps[ids==particle]
        
-    # If particle not found, don't attempt to calculate profile
+    # If particle not found, don't attempt to calculate profile or age
     if particle_temp.size == 0:            
         x = np.empty(He_profile_nodes)
         x.fill(np.nan)
-
-        return(x)
+        age = np.nan
+        output = (age,x)
+        return(output)
     
     # Use previous He from nearest neighbor in previous timestep if none present
     
@@ -410,32 +414,30 @@ def particle_He_profile(particle,inputs,calc_age,interpolate_profile):
             
             # Get profile of closest particle
             profile = old_profiles[neighbor_id==old_ids]
-            print('Interpolated Profile')
         
         # If turned off, return original profile of np.nan
-        elif (interpolate_profile==False) & calc_age==False:
+        elif interpolate_profile==False:
             x = np.empty(He_profile_nodes)
             x.fill(np.nan)
-            return(x)
-        
-        # Or return blank age if calculate age is on
-        elif (interpolate_profile==False) & calc_age==True:
             age = np.nan
-            return(age)
+            output = (age,x)
+            return(output)
     
     if calc_age==True:
-        age,vol,pos = tc.forward_model(U,Th,radius,particle_temp,time_interval,system,
+        age,vol,pos,x = tc.forward_model(U,Th,radius,particle_temp,time_interval,system,
                              initial_He=profile.flatten(),calc_age=True,print_age=False,
                              nodes=He_profile_nodes)
         
-        return(age)
+        output = (age,x)
+        return(output)
         
     else:    
         x = tc.forward_model(U,Th,radius,particle_temp,time_interval,system,
                              initial_He=profile.flatten(),calc_age=False,print_age=False,
                              nodes=He_profile_nodes)
-        
-        return(x)
+        age = np.nan
+        output = (age,x)
+        return(output)
     
     
 

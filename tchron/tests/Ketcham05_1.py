@@ -28,7 +28,7 @@ axs[0].set_xlabel('Time (Ma)')
 axs[0].set_ylabel('Temperature (C)')
 axs[0].set_title('Time-Temperature History')
 
-age_model,volumes,positions = tc.forward_model(U,Th,radius,temps,time_interval,system='AHe')
+age_model,volumes,positions,x = tc.forward_model(U,Th,radius,temps,time_interval,system='AHe')
 
 axs[1].plot(positions,volumes)
 axs[1].grid(True)

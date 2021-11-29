@@ -522,7 +522,7 @@ def forward_model(U,Th,radius,temps,time_interval,system,nodes=513,
         age,vol,pos = profile2age(x,node_positions,radius,nodes,UTh_molg,
                                   stop_distances,print_age)
         
-        return(age,vol,pos)
+        return(age,vol,pos,x)
     
     else:
         return(x)
