@@ -638,7 +638,8 @@ def particle_positions(meshes,timestep,bounds=None):
     df = pd.DataFrame(data=positions,index=ids)
     return(df)
 
-def load_particle_meshes(directory,timesteps,filename='meshes.vtm',bounds=None,
+def load_particle_meshes(directory,timesteps,save=True,filename='meshes.vtm',
+                         bounds=None,
                          parallel=True,kind='particles'):
     """
     Load particle meshes, clip, and save to avoid duplicate computation. This is
@@ -666,11 +667,11 @@ def load_particle_meshes(directory,timesteps,filename='meshes.vtm',bounds=None,
         processes = os.cpu_count()-6
         print('Processes: ',processes)
         
-        meshes = Parallel(n_jobs=processes,require='sharedmem')(
+        mesh_list = Parallel(n_jobs=processes,require='sharedmem')(
             delayed(loadclip_parallel)(file,bounds) for file in tqdm(files)
             )
     
-        #meshes = pv.MultiBlock(mesh_list)
+        meshes = pv.MultiBlock(mesh_list)
     
     else:
         meshes = pv.MultiBlock()
@@ -685,8 +686,9 @@ def load_particle_meshes(directory,timesteps,filename='meshes.vtm',bounds=None,
             
             meshes.append(mesh)
             
-            # Save clipped meshes as smaller file to work with
-            meshes.save(filename)
+    if save == True:
+        # Save clipped meshes as smaller file to work with
+        meshes.save(filename)
         
     return(meshes)
 
