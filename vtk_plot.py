@@ -277,7 +277,7 @@ def He_age_vtk(meshes,system,time_interval,filename='mesh_He.vtu',
 
 def He_age_vtk_parallel(meshes,system,time_interval,filename='meshes_He.vtm',
                U=100,Th=100,radius=50,batch_size=100,processes=os.cpu_count()-2,
-               He_profile_nodes=513,interpolate_profile=True):
+               He_profile_nodes=513,interpolate_profile=True,all_timesteps=True):
     
     # Isolate final mesh
     final_mesh = meshes[-1]
@@ -314,8 +314,10 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='meshes_He.vtm',
                   U,Th,radius,time_interval,
                   system,He_profile_nodes)
             
-        # Calculate ages on last timestep
-        if k==len(all_temps)-1:
+        # Calculate ages on last timestep only if indicated
+        if all_timesteps==True:
+            calc_age=True
+        elif k==len(all_temps)-1:
             calc_age=True
         else:
             calc_age=False
