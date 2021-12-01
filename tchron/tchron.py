@@ -144,7 +144,7 @@ def get_parameters(system='AHe'):
     else:
         raise Exception('Isotopic System Not Found')
     
-    if system == ('AHe' or 'ZHe'):
+    if (system == 'AHe') or (system == 'ZHe'):
         stopping_distances = np.array([R_238U,R_235U,R_232Th])
         return(freq_factor,activ_energy,stopping_distances)
     else:
