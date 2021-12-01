@@ -33,13 +33,7 @@ vp.plot2D('meshes_He_interp/meshes_He_interp_20.vtu','AHe',bounds=[0,200,90,100]
 
 ages = He_mesh[-1].point_data['AHe']
 
-cax = fig.add_axes([0.1,0.08,0.8,0.02])
-
-norm = colors.Normalize(vmin=0,vmax=2)
-mappable = cm.ScalarMappable(norm=norm,cmap='plasma_r')
-cbar = plt.colorbar(mappable,orientation='horizontal',cax=cax)
-cbar.set_label('AHe Age')
-cbar.set_ticks([0,1,2])
+cbar = vp.add_colorbar(fig,0,2,'plasma_r',label='AHe Age',ticks=[0,1,2])
 
 fig.savefig('vtk_tchron_test.pdf')
 

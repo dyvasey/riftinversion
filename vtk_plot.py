@@ -10,10 +10,11 @@ import pyvista as pv
 from tqdm import tqdm
 from joblib import Parallel,delayed
 from scipy.spatial import KDTree
+from matplotlib import cm,colors
 
 from tchron import tchron as tc
 
-def plot2D(file,field,bounds,ax=None,contours=False,cbar=False,
+def plot2D(file,field,bounds,ax=None,contours=False,
          cfields=['crust_upper','crust_lower','mantle_lithosphere'],
          null_field='asthenosphere',**kwargs):
     """
@@ -59,15 +60,7 @@ def plot2D(file,field,bounds,ax=None,contours=False,cbar=False,
         plotter.add_mesh(cntrs,color='black',line_width=5)
     
     plotter.view_xy()
-    
-    if cbar==True:
-        # Format color bar
-         pv.global_theme.colorbar_horizontal.height = 0.2
-         pv.global_theme.colorbar_horizontal.position_x = 0.61
-         pv.global_theme.colorbar_horizontal.position_y = 0.71
-         pv.global_theme.font.size = 12
-    else:
-        plotter.remove_scalar_bar()
+    plotter.remove_scalar_bar()
 
 
     # Calculate Camera Position from Bounds
@@ -103,6 +96,15 @@ def plot2D(file,field,bounds,ax=None,contours=False,cbar=False,
     ax.imshow(img,aspect='equal',extent=bounds)
     
     return(ax)
+
+def add_colorbar(fig,vmin,vmax,cmap,location=[0.1,0.08,0.8,0.02],
+                 orientation='horizontal',**kwargs):
+    cax = fig.add_axes(location)
+    norm = colors.Normalize(vmin=vmin,vmax=vmax)
+    mappable = cm.ScalarMappable(norm=norm,cmap=cmap)
+    cbar = plt.colorbar(mappable,cax=cax,orientation=orientation,**kwargs)
+    
+    return(cax)
 
 def plot_manual(file,field='density',bounds=None,contours=False,
          cfields=['crust_upper','crust_lower','mantle_lithosphere'],
