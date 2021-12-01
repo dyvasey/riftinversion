@@ -662,8 +662,8 @@ def particle_positions(meshes,timestep,bounds=None):
     return(df)
 
 def load_particle_meshes(directory,timesteps,save=True,filename='meshes.vtm',
-                         bounds=None,
-                         parallel=True,kind='particles'):
+                         bounds=None,parallel=True,
+                         processes = os.cpu_count()-6,kind='particles'):
     """
     Load particle meshes, clip, and save to avoid duplicate computation. This is
     computationally intensive for large meshes and may be preferred to do on 
@@ -687,7 +687,6 @@ def load_particle_meshes(directory,timesteps,save=True,filename='meshes.vtm',
 
     if parallel == True:
         print('Loading and Clipping Meshes...')
-        processes = os.cpu_count()-6
         print('Processes: ',processes)
         
         mesh_list = Parallel(n_jobs=processes,require='sharedmem')(
