@@ -13,7 +13,7 @@ set Maximum time step                          = 5e3
 set Output directory                           = output_ri_rift
 set Timing output frequency                    = 1
 set Pressure normalization                     = no
-set Adiabatic surface temperature              = 1573    
+set Adiabatic surface temperature              = 1573
 
 # Governing equations
 subsection Formulation
@@ -51,7 +51,7 @@ subsection Mesh refinement
   set Initial global refinement          = 1
   set Initial adaptive refinement        = 1
   set Time steps between mesh refinement = 1
-  
+
   set Strategy = isosurfaces
   subsection Isosurfaces
     set Isosurfaces = 2,2,  Temperature: 273|1573
@@ -139,7 +139,7 @@ end
 subsection Initial composition model
   set List of model names = ascii data
   subsection Ascii data model
-    set Data directory = 
+    set Data directory =
     set Data file name = composition.txt
   end
 end
@@ -239,12 +239,12 @@ subsection Material model
     set Stress exponents for dislocation creep    =      3.5,        3.5,        4.0,        3.0,        3.5
     set Activation energies for dislocation creep =   530.e3,    530.e3,     223.e3,     345.e3,     530.e3
     set Activation volumes for dislocation creep  =   18.e-6,     18.e-6,         0.,         0.,     18.e-6
-    
+
     set Prefactors for diffusion creep            = 2.37e-15, 1.00e-50, 1.00e-50, 1.00e-50, 1.00e-50
     set Grain size exponents for diffusion creep  =      3.0,       0.,      0.,       0.,       0.
     set Activation energies for diffusion creep   =   375.e3,       0.,      0.,       0.,       0.
     set Activation volumes for diffusion creep    =    2.e-6,      0.,      0.,       0.,       0.
-    
+
     set Angles of internal friction = 30.
     set Cohesions = 20.e6
 
@@ -272,7 +272,7 @@ subsection Postprocess
 set List of postprocessors = basic statistics, composition statistics, heat flux densities, heat flux statistics, mass flux statistics, material statistics, pressure statistics, temperature statistics, topography, velocity statistics, visualization, particles, particle count statistics
   subsection Particles
     set Number of particles = 3.5e6
-    set Minimum particles per cell  = 25
+    set Minimum particles per cell  = 15
     set Maximum particles per cell  = 60
     set Load balancing strategy     = remove and add particles
     set List of particle properties = initial composition, viscoplastic strain invariants, pT path, position
@@ -301,4 +301,3 @@ end
 subsection Checkpointing
   set Steps between checkpoint = 5
 end
-
