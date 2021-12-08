@@ -6,6 +6,7 @@ composition.txt
 *.png
 *.prm
 *.jpg
+*.JPG
 *.pdf
 *.vtu
 *.vtm
