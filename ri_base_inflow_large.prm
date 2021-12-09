@@ -60,13 +60,13 @@ subsection Mesh refinement
   subsection Maximum refinement function
     set Coordinate system   = cartesian
     set Variable names      = x,y
-    set Function expression = if( x>=600.e3 && x<=1200 ,2 , 0 )
+    set Function expression = if( x>=600.e3 && x<=1200.e3 ,2 , 0 )
   end
 
   subsection Minimum refinement function
     set Coordinate system   = cartesian
     set Variable names      = x,y
-    set Function expression = if( x>=600.e3 && x<=1200 ,1 , 0 )
+    set Function expression = if( x>=600.e3 && x<=1200.e3 ,1 , 0 )
   end
 end
 
