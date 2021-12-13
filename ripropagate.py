@@ -175,7 +175,7 @@ def generate(file='ri_base.prm',lthick=100,depth=400,evel=1,etime=50,soft=0.333,
     
     with open(path) as f_prm: # Open the file
         contents = f_prm.read() # Read file into string
-        contents = lthickness(contents,lthick)
+        contents = lthickness(contents,lthick,depth)
         contents = evelocity(contents,evel)
         contents = time(contents,etime)
         contents = strain_softening(contents,soft)
