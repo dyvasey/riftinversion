@@ -106,7 +106,7 @@ subsection Boundary velocity model
 
   subsection Function
     set Variable names      = x,y
-    set Function constants  = v=XXX, d=400.e3, w=1000.e3, p1=150.e3, p2=250.e3, s=XXX
+    set Function constants  = v=XXX, d=400.e3, w=1000.e3, p1=250.e3, p2=150.e3, s=XXX
     set Function expression = if( x<w/2., \
                                   if ( y>p1, \
                                        -v, \
@@ -146,7 +146,7 @@ end
 
 # Composition boundary conditions
 subsection Boundary composition model
-  set Fixed composition boundary indicators  = bottom
+  set Fixed composition boundary indicators  = bottom, left, right
   set Model name = initial composition
 end
 

@@ -135,7 +135,8 @@ def strain_softening(text,value):
     
     return(text)
     
-def generate(file='ri_base.prm',lthick=100,depth=400,evel=1,etime=50,soft=0.333,output='.',
+def generate(file='ri_base.prm',lthick=100,depth=400,evel=1,etime=50,soft=0.333,
+             output='.',
              shell='run_base.sh',ver=''):
     """
     Generate .prm file from dummy base file.
@@ -170,13 +171,16 @@ def generate(file='ri_base.prm',lthick=100,depth=400,evel=1,etime=50,soft=0.333,
     path = os.path.join('.',file) # Join root to filename
     newname = file.replace('base',fullstring) # Change file name
     
+    p1 = ((depth/2)+50)*1e3
+    p2 = ((depth/2)-50)*1e3
+    
     if os.path.exists(output)==False:
         os.makedirs(output)
     
     with open(path) as f_prm: # Open the file
         contents = f_prm.read() # Read file into string
         contents = lthickness(contents,lthick,depth)
-        contents = evelocity(contents,evel)
+        contents = evelocity(contents,evel,p1,p2)
         contents = time(contents,etime)
         contents = strain_softening(contents,soft)
         if 'XXX' in contents:
