@@ -9,11 +9,11 @@ set Nonlinear solver tolerance                 = 1e-4
 set Max nonlinear iterations                   = 100
 set Max nonlinear iterations in pre-refinement = 5
 set CFL number                                 = 0.5
-set Maximum time step                          = 5e3
+set Maximum time step                          = 20e3
 set Output directory                           = output_ri_rift
 set Timing output frequency                    = 1
 set Pressure normalization                     = no
-set Adiabatic surface temperature              = 1573    
+set Adiabatic surface temperature              = 1573
 
 # Governing equations
 subsection Formulation
@@ -51,7 +51,7 @@ subsection Mesh refinement
   set Initial global refinement          = 1
   set Initial adaptive refinement        = 1
   set Time steps between mesh refinement = 1
-  
+
   set Strategy = isosurfaces
   subsection Isosurfaces
     set Isosurfaces = 2,2,  Temperature: 273|1573
@@ -99,14 +99,26 @@ subsection Mesh deformation
 end
 
 # Velocity on boundaries characterized by functions
-# Outflow on sides is balanced by inflow at base
+# Outflow in the upper half is balanced by inflow in the bottom half
 subsection Boundary velocity model
-  set Prescribed velocity boundary indicators = left x: function, right x:function, bottom y:function
+  set Tangential velocity boundary indicators = bottom
+  set Prescribed velocity boundary indicators = left: function, right:function
 
   subsection Function
     set Variable names      = x,y
-    set Function constants  = v=XXX, d=400.e3, w=1000.e3
-    set Function expression = if (x<w/2 , -v, v); v*2*d/w
+    set Function constants  = v=XXX, d=400.e3, w=1000.e3, p1=250.e3, p2=150.e3, s=XXX
+    set Function expression = if( x<w/2., \
+                                  if ( y>p1, \
+                                       -v, \
+                                       if ( y<=p1 && y>p2, \
+                                            s * (y - p1) + -v, \
+                                            v ) ), \
+                                  if ( y>p1, \
+                                       v, \
+                                       if ( y<=p1 && y>p2, \
+                                            -1*s * (y - p1) + v, \
+                                            -v) ) ); \
+                              0;
   end
 end
 
@@ -127,14 +139,14 @@ end
 subsection Initial composition model
   set List of model names = ascii data
   subsection Ascii data model
-    set Data directory = 
+    set Data directory =
     set Data file name = composition.txt
   end
 end
 
 # Composition boundary conditions
 subsection Boundary composition model
-  set Fixed composition boundary indicators  = bottom
+  set Fixed composition boundary indicators  = bottom, left, right
   set Model name = initial composition
 end
 
@@ -227,12 +239,12 @@ subsection Material model
     set Stress exponents for dislocation creep    =      3.5,        3.5,        4.0,        3.0,        3.5
     set Activation energies for dislocation creep =   530.e3,    530.e3,     223.e3,     345.e3,     530.e3
     set Activation volumes for dislocation creep  =   18.e-6,     18.e-6,         0.,         0.,     18.e-6
-    
+
     set Prefactors for diffusion creep            = 2.37e-15, 1.00e-50, 1.00e-50, 1.00e-50, 1.00e-50
     set Grain size exponents for diffusion creep  =      3.0,       0.,      0.,       0.,       0.
     set Activation energies for diffusion creep   =   375.e3,       0.,      0.,       0.,       0.
     set Activation volumes for diffusion creep    =    2.e-6,      0.,      0.,       0.,       0.
-    
+
     set Angles of internal friction = 30.
     set Cohesions = 20.e6
 
@@ -287,6 +299,5 @@ end
 
 # Checkpointing
 subsection Checkpointing
-  set Steps between checkpoint = 5
+  set Steps between checkpoint = 25
 end
-

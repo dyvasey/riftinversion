@@ -8,8 +8,8 @@ set Nonlinear solver scheme                    = single Advection, iterated defe
 set Nonlinear solver tolerance                 = 1e-4
 set Max nonlinear iterations                   = 100
 set Max nonlinear iterations in pre-refinement = 5
-set CFL number                                 = 0.2
-set Maximum time step                          = 5e3
+set CFL number                                 = 0.5
+set Maximum time step                          = 20e3
 set Output directory                           = output_ri_rift
 set Timing output frequency                    = 1
 set Pressure normalization                     = no
@@ -33,15 +33,15 @@ subsection Adiabatic conditions model
   end
 end
 
-# Model geometry (1000x400 km, 4 km spacing)
+# Model geometry (1000x600 km, 4 km spacing)
 subsection Geometry model
   set Model name = box
   subsection Box
     set X repetitions = 250
-    set Y repetitions = 100
+    set Y repetitions = 150
 
     set X extent      = 1000e3
-    set Y extent      = 400e3
+    set Y extent      = 600e3
 
   end
 end
@@ -106,7 +106,7 @@ subsection Boundary velocity model
 
   subsection Function
     set Variable names      = x,y
-    set Function constants  = v=XXX, d=400.e3, w=1000.e3, p1=250.e3, p2=150.e3, s=XXX
+    set Function constants  = v=XXX, d=600.e3, w=1000.e3, p1=400.e3, p2=200.e3, s=XXX
     set Function expression = if( x<w/2., \
                                   if ( y>p1, \
                                        -v, \
@@ -180,7 +180,7 @@ subsection Initial temperature model
   end
   subsection Function
     set Variable names = x,y
-    set Function constants = h=400.e3,ts1=XXX,ts2=XXX,ts3=XXX,ts4=XXX,ast=1573, \
+    set Function constants = h=600.e3,ts1=XXX,ts2=XXX,ts3=XXX,ts4=XXX,ast=1573, \
                              A1=1.e-6,A2=0.25e-6,A3=0.0, \
                              k1=2.5,k2=2.5,k3=2.5, \
                              qs1=XXX,qs2=XXX,qs3=XXX
@@ -271,7 +271,7 @@ end
 subsection Postprocess
 set List of postprocessors = basic statistics, composition statistics, heat flux densities, heat flux statistics, mass flux statistics, material statistics, pressure statistics, temperature statistics, topography, velocity statistics, visualization, particles, particle count statistics
   subsection Particles
-    set Number of particles = 3.5e6
+    set Number of particles = 5e6
     set Minimum particles per cell  = 15
     set Maximum particles per cell  = 60
     set Load balancing strategy     = remove and add particles
@@ -299,5 +299,5 @@ end
 
 # Checkpointing
 subsection Checkpointing
-  set Steps between checkpoint = 5
+  set Steps between checkpoint = 25
 end
