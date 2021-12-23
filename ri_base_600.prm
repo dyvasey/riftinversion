@@ -299,5 +299,5 @@ end
 
 # Checkpointing
 subsection Checkpointing
-  set Steps between checkpoint = 25
+  set Steps between checkpoint = 5
 end
