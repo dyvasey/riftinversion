@@ -206,7 +206,8 @@ def generate(file='ri_base.prm',lthick=100,depth=400,evel=1,etime=50,soft=0.333,
     return
 
 def comp_ascii(thicknesses=[20,20,60],x=1000,y=400,resolution=2,
-               rmin=0.5,rmax=1.5,strain_width=250,strain_depth=60,plot=True,
+               rmin=0.5,rmax=1.5,strain_width=250,strain_depth=60,
+               seed=25,plot=True,
                cfix=True,wela=False,non_initial=False,output='.'):
     """
     Create composition ASCII file after Naliboff script for ASPECT model
@@ -264,9 +265,14 @@ def comp_ascii(thicknesses=[20,20,60],x=1000,y=400,resolution=2,
     # Array for randomized plastic strain and viscous strain
     ep = np.zeros([xpts,ypts])
     
+    # Set random seed
+    np.random.seed(seed)
+    rn = np.random.rand(xpts,ypts)
+    
     # Open outfile for composition data
     path = os.path.join(output,'composition.txt')
     outfile=open(path,'w')
+    outfile.write('# RANDOM SEED = %i\n'% (seed))
     outfile.write('# POINTS: %-i %i\n'% (x.size,y.size))
     
     # Loop through grid points
@@ -278,12 +284,12 @@ def comp_ascii(thicknesses=[20,20,60],x=1000,y=400,resolution=2,
           if x[j]>xmin_ep and x[j]<xmax_ep and y[i]>ymin_ep and y[i]<ymax_ep:
           
             if cfix == True:
-              if (np.random.random() < 0.5):
+              if (rn[j,i] < 0.5):
                 ep[j,i] = rmin
               else:
                 ep[j,i] = rmax
             else:
-              ep[j,i] = rmin + (np.random.random() * (rmax - rmin))
+              ep[j,i] = rmin + (rn[j,i] * (rmax - rmin))
           
           # Write spatial coordinates
           outfile.write('%-8.3e  ' % (x[j]))
