@@ -341,6 +341,8 @@ def comp_ascii(thicknesses=[20,20,60],x=1000,y=400,resolution=2,
       ax.set_ylabel('Height (km)')
       ctf = ax.contourf(xx[:,:]/1.e3,yy[:,:]/1.e3,ep[:,:])
       fig.colorbar(ctf)
+      
+    return(xx,yy,ep)
     
     
     
