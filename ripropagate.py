@@ -205,7 +205,7 @@ def generate(file='ri_base.prm',lthick=100,depth=400,evel=1,etime=50,soft=0.333,
         newfile.close()
     return
 
-def comp_ascii(thicknesses=[20,20,60],x=1000,y=400,resolution=2,
+def comp_ascii(thicknesses=[20,20,60],width=1000,depth=400,resolution=2,
                rmin=0.5,rmax=1.5,strain_width=250,strain_depth=60,
                seed=25,plot=True,
                cfix=True,wela=False,non_initial=False,output='.'):
@@ -234,9 +234,9 @@ def comp_ascii(thicknesses=[20,20,60],x=1000,y=400,resolution=2,
     km2m = 1000
     
     xmin    = 0
-    xmax    = x*km2m
+    xmax    = width*km2m
     ymin    = 0
-    ymax    = y*km2m
+    ymax    = depth*km2m
     
     gres = resolution*km2m
     
@@ -267,7 +267,10 @@ def comp_ascii(thicknesses=[20,20,60],x=1000,y=400,resolution=2,
     
     # Set random seed
     np.random.seed(seed)
-    rn = np.random.rand(xpts,ypts)
+    
+    # Make box of random strain with y values based on ep depth
+    ep_ypts = int((ymax_ep-ymin_ep)/gres) + 1
+    rn = np.random.rand(xpts,ep_ypts)
     
     # Open outfile for composition data
     path = os.path.join(output,'composition.txt')
@@ -282,14 +285,19 @@ def comp_ascii(thicknesses=[20,20,60],x=1000,y=400,resolution=2,
     
           # Randomized plastic strain is non-zero only in specified regions
           if x[j]>xmin_ep and x[j]<xmax_ep and y[i]>ymin_ep and y[i]<ymax_ep:
-          
+              
             if cfix == True:
-              if (rn[j,i] < 0.5):
+              
+              # Invert i indices for processing ep
+              i_inverted = ypts-i
+              
+              if (rn[j,i_inverted] < 0.5):
                 ep[j,i] = rmin
               else:
                 ep[j,i] = rmax
+            
             else:
-              ep[j,i] = rmin + (rn[j,i] * (rmax - rmin))
+              ep[j,i] = rmin + (rn[j,i_inverted] * (rmax - rmin))
           
           # Write spatial coordinates
           outfile.write('%-8.3e  ' % (x[j]))
