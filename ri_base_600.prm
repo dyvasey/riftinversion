@@ -48,14 +48,9 @@ end
 
 # Globally refine to 2 km spacing, 1 km in lithosphere
 subsection Mesh refinement
-  set Initial global refinement          = 1
-  set Initial adaptive refinement        = 1
-  set Time steps between mesh refinement = 1
-
-  set Strategy = isosurfaces
-  subsection Isosurfaces
-    set Isosurfaces = 2,2,  Temperature: 273|1573
-  end
+  set Initial global refinement          = 2
+  set Initial adaptive refinement        = 0
+  set Time steps between mesh refinement = 0
 end
 
 # Q2Q1 Element
@@ -271,7 +266,7 @@ end
 subsection Postprocess
 set List of postprocessors = basic statistics, composition statistics, heat flux densities, heat flux statistics, mass flux statistics, material statistics, pressure statistics, temperature statistics, topography, velocity statistics, visualization, particles, particle count statistics
   subsection Particles
-    set Number of particles = 5e6
+    set Number of particles = 18e6
     set Minimum particles per cell  = 15
     set Maximum particles per cell  = 60
     set Load balancing strategy     = remove and add particles

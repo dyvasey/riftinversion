@@ -4,8 +4,8 @@
 #SBATCH -e %j
 #SBATCH -p skx-normal
 #SBATCH -t 48:00:00
-#SBATCH -N 1
-#SBATCH -n 48
+#SBATCH -N XXX
+#SBATCH -n XXX
 #SBATCH -A TG-EAR080022N
 
 # load modules

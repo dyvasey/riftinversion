@@ -137,7 +137,7 @@ def strain_softening(text,value):
     
 def generate(file='ri_base.prm',lthick=100,depth=400,evel=1,etime=50,soft=0.333,
              p1=250,p2=150,output='.',
-             shell='run_base.sh',ver=''):
+             shell='run_base.sh',ver='',nodes=1):
     """
     Generate .prm file from dummy base file.
     
@@ -196,6 +196,8 @@ def generate(file='ri_base.prm',lthick=100,depth=400,evel=1,etime=50,soft=0.333,
         contents = f_sh.read() # Read file into string
         contents = contents.replace('$ASP XXX','$ASP '+newname)
         contents = contents.replace('log_XXX','log_ri_'+fullstring)
+        contents = contents.replace('-N XXX','-N '+str(nodes))
+        contents = contents.replace('-n XXX','-n '+str(nodes*48))
         contents = version(contents,ver)
         if 'XXX' in contents:
             print('WARNING: .sh generated contains XXX')
