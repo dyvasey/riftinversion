@@ -37,7 +37,7 @@ for k,ax in enumerate(axs):
     ax.set_ylim(ymin/1.e3,ymax/1.e3)
     #ax.set_xlabel('Horizontal Position (km)')
     #ax.set_ylabel('Height (km)')
-    ctf = ax.contourf(xx[:,:]/1.e3,yy[:,:]/1.e3,ep[:,:],vmin=0.8)
+    ctf = ax.contourf(xx[:,:]/1.e3,yy[:,:]/1.e3,ep[:,:])
     
     ax.set_title('Mantle Lith Thick: ' + str(mantle_liths[k]) + '  Depth: ' + str(depths[k]))
 
