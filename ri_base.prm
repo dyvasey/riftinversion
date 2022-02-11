@@ -46,7 +46,7 @@ subsection Geometry model
   end
 end
 
-# Globally refine to 2 km spacing, 1 km in lithosphere
+# Globally refine to 1 km spacing
 subsection Mesh refinement
   set Initial global refinement          = 2
   set Initial adaptive refinement        = 0
