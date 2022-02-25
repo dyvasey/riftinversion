@@ -33,24 +33,29 @@ subsection Adiabatic conditions model
   end
 end
 
-# Model geometry (1000x400 km, 4 km spacing)
+# Model geometry (1000x600 km, 4 km spacing)
 subsection Geometry model
   set Model name = box
   subsection Box
     set X repetitions = 250
-    set Y repetitions = 100
+    set Y repetitions = 150
 
     set X extent      = 1000e3
-    set Y extent      = 400e3
+    set Y extent      = 600e3
 
   end
 end
 
-# Globally refine to 1 km spacing
+# Adaptively refine to 1 km below 1573 K, 2 km below 1615 K
 subsection Mesh refinement
-  set Initial global refinement          = 2
-  set Initial adaptive refinement        = 0
-  set Time steps between mesh refinement = 0
+  set Initial global refinement          = 0
+  set Initial adaptive refinement        = 2
+  set Time steps between mesh refinement = 1
+
+  set Strategy = isosurfaces
+  subsection Isosurfaces
+    set Isosurfaces = 2,2,  Temperature: 273|1573; 1,1, Temperature: 1573|1615
+  end
 end
 
 # Q2Q1 Element
@@ -101,7 +106,7 @@ subsection Boundary velocity model
 
   subsection Function
     set Variable names      = x,y
-    set Function constants  = v=XXX, d=400.e3, w=1000.e3, p1=250.e3, p2=150.e3, s=XXX
+    set Function constants  = v=XXX, d=600.e3, w=1000.e3, p1=400.e3, p2=200.e3, s=XXX
     set Function expression = if( x<w/2., \
                                   if ( y>p1, \
                                        -v, \
@@ -175,7 +180,7 @@ subsection Initial temperature model
   end
   subsection Function
     set Variable names = x,y
-    set Function constants = h=400.e3,ts1=XXX,ts2=XXX,ts3=XXX,ts4=XXX,ast=1573, \
+    set Function constants = h=600.e3,ts1=XXX,ts2=XXX,ts3=XXX,ts4=XXX,ast=1573, \
                              A1=1.e-6,A2=0.25e-6,A3=0.0, \
                              k1=2.5,k2=2.5,k3=2.5, \
                              qs1=XXX,qs2=XXX,qs3=XXX
@@ -266,14 +271,19 @@ end
 subsection Postprocess
 set List of postprocessors = basic statistics, composition statistics, heat flux densities, heat flux statistics, mass flux statistics, material statistics, pressure statistics, temperature statistics, topography, velocity statistics, visualization, particles, particle count statistics
   subsection Particles
-    set Number of particles = 12e6
+    set Number of particles = 5e6
     set Minimum particles per cell  = 15
     set Maximum particles per cell  = 60
     set Load balancing strategy     = remove and add particles
     set List of particle properties = initial composition, viscoplastic strain invariants, pT path, position
     set Interpolation scheme        = cell average
     set Update ghost particles      = true
-    set Particle generator name     = random uniform
+    set Particle generator name     = reference cell
+    subsection Generator
+      subsection Reference cell
+        set Number of particles per cell per direction = 5
+      end
+    end
     set Time between data output    = 500.e3
     set Data output format          = vtu
   end
