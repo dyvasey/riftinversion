@@ -310,13 +310,13 @@ def comp_ascii(thicknesses=[20,20,60],width=1000,depth=400,resolution=2,
               outfile.write('%6.4f  ' % (0.0))
               outfile.write('%6.4f  ' % (0.0))
               outfile.write('%6.4f  ' % (0.0))
-    
-          # Write noninitial plastic strain values
-          if non_initial == 'true':
-              outfile.write('%6.4f  ' % (0.0))
          
           # Write plastic strain values
           outfile.write('%6.4f  ' % (ep[j,i]))
+
+          # Write noninitial plastic strain values
+          if non_initial == True:
+            outfile.write('%6.4f  ' % (0.0))
               
           # Write upper crust values
           if y[i]>ymin_cu:
