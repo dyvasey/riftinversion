@@ -24,7 +24,7 @@ def plot2D(file,field,bounds,ax=None,contours=False,
     ----------
     file : VTU or PVTU file to plot
     field : Field to use for color.
-    bounds : List of bounds by which to clip the plot.
+    bounds : List of bounds (km) by which to clip the plot.
     contours : Boolean for whether to add temperature contours. 
         The default is False.
     cfields : Names of compositional fields to use if field is 'comp_field.' 
@@ -802,5 +802,31 @@ def surface_all_timesteps(meshes,end_mesh,topography,buffer=100):
     
     return(surface_all_time)
         
+def pull_profile(file,field,x_pos='midpoint'):
+    """
+    Pull profile of scalar field from pvtu file.
+    """
+    mesh = pv.read(file)
+    scalar = mesh.point_data[field]
+    points = mesh.points
+    
+    x = points[:,0]
+    y = points[:,1]
+    
+    if x_pos=='midpoint':
+        # Use x midpoint for profile
+        xmax = x.max()
+        xmin = x.min()
+        x_pos = (xmax-xmin)/2
+    
+    y_profile = y[x==x_pos]
+    s_profile = scalar[x==x_pos]
+    
+    # Sort by y_value
+    sort_indices = np.argsort(y_profile)
+    y_sort = y_profile[sort_indices]   
+    s_sort = s_profile[sort_indices]
     
     
+    return(y_sort,s_sort)
+
