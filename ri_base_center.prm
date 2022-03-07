@@ -54,7 +54,7 @@ subsection Mesh refinement
 
   set Strategy = isosurfaces, minimum refinement function
   subsection Isosurfaces
-    set Isosurfaces = 2,3,  Temperature: 273|1573; 1,1, Temperature: 1573|1615
+    set Isosurfaces = 2,3,  Temperature: 273|1573; 1,3, Temperature: 1573|1615
   end
   subsection Minimum refinement function
     set Coordinate system = cartesian
