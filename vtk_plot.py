@@ -95,6 +95,9 @@ def plot2D(file,field,bounds,ax=None,contours=False,
     
     ax.imshow(img,aspect='equal',extent=bounds)
     
+    plotter.clear()
+    pv.close_all()
+    
     return(ax)
 
 def add_colorbar(fig,vmin=None,vmax=None,cmap='viridis',location=[0.1,0.08,0.8,0.02],
