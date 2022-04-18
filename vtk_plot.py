@@ -14,7 +14,7 @@ from matplotlib import cm,colors
 
 from tchron import tchron as tc
 
-def plot2D(file,field,bounds,ax=None,contours=False,
+def plot2D(file,field,bounds,ax=None,contours=False,colorbar=False,
          cfields=['crust_upper','crust_lower','mantle_lithosphere'],
          null_field='asthenosphere',**kwargs):
     """
@@ -52,15 +52,20 @@ def plot2D(file,field,bounds,ax=None,contours=False,
     
     pv.set_plot_theme("document")
     plotter = pv.Plotter(off_screen=True)
-
+    sargs = dict(width=0.6,fmt='%.1e',height=0.2,label_font_size=32,
+                 position_x=0.1)
     
-    plotter.add_mesh(mesh,scalars=field,**kwargs)
+    plotter.add_mesh(mesh,scalars=field,scalar_bar_args=sargs,**kwargs)
     
     if contours ==True:
         plotter.add_mesh(cntrs,color='black',line_width=5)
     
     plotter.view_xy()
-    plotter.remove_scalar_bar()
+    
+    if colorbar==False:
+        plotter.remove_scalar_bar()
+    
+    plotter.enable_depth_peeling(10)
 
 
     # Calculate Camera Position from Bounds
