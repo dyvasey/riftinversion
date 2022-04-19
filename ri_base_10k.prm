@@ -9,7 +9,7 @@ set Nonlinear solver tolerance                 = 1e-4
 set Max nonlinear iterations                   = 100
 set Max nonlinear iterations in pre-refinement = 5
 set CFL number                                 = 0.5
-set Maximum time step                          = 20e3
+set Maximum time step                          = 10e3
 set Output directory                           = output_ri_rift
 set Timing output frequency                    = 1
 set Pressure normalization                     = no
@@ -49,17 +49,12 @@ end
 # Adaptively refine to 1 km below 1573 K, 2 km below 1615 K
 subsection Mesh refinement
   set Initial global refinement          = 0
-  set Initial adaptive refinement        = 3
+  set Initial adaptive refinement        = 2
   set Time steps between mesh refinement = 1
 
-  set Strategy = isosurfaces, minimum refinement function
+  set Strategy = isosurfaces
   subsection Isosurfaces
-    set Isosurfaces = 2,3,  Temperature: 273|1573; 1,3, Temperature: 1573|1615
-  end
-  subsection Minimum refinement function
-    set Coordinate system = cartesian
-    set Variable names = x,y
-    set Function expression = if(y>=500.e3 &&(x>=250.e3 && x<750.e3),3,0)
+    set Isosurfaces = 2,2,  Temperature: 273|1573; 1,1, Temperature: 1573|1615
   end
 end
 
@@ -276,9 +271,9 @@ end
 subsection Postprocess
 set List of postprocessors = basic statistics, composition statistics, heat flux densities, heat flux statistics, mass flux statistics, material statistics, pressure statistics, temperature statistics, topography, velocity statistics, visualization, particles, particle count statistics
   subsection Particles
-    set Number of particles = 8e6
-    set Minimum particles per cell  = 15
-    set Maximum particles per cell  = 60
+    set Number of particles = 10e6
+    set Minimum particles per cell  = 25
+    set Maximum particles per cell  = 100
     set Load balancing strategy     = remove and add particles
     set List of particle properties = initial composition, viscoplastic strain invariants, pT path, position
     set Interpolation scheme        = cell average
@@ -286,7 +281,7 @@ set List of postprocessors = basic statistics, composition statistics, heat flux
     set Particle generator name     = reference cell
     subsection Generator
       subsection Reference cell
-        set Number of particles per cell per direction = 5
+        set Number of particles per cell per direction = 7
       end
     end
     set Time between data output    = 500.e3
