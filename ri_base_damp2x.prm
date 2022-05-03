@@ -5,11 +5,11 @@ set End time                                   = XXX
 set Resume computation                         = auto
 set Use years in output instead of seconds     = true
 set Nonlinear solver scheme                    = single Advection, iterated defect correction Stokes
-set Nonlinear solver tolerance                 = 1e-4
-set Max nonlinear iterations                   = 100
+set Nonlinear solver tolerance                 = 1e-5
+set Max nonlinear iterations                   = 1000
 set Max nonlinear iterations in pre-refinement = 5
 set CFL number                                 = 0.5
-set Maximum time step                          = 10e3
+set Maximum time step                          = 20e3
 set Output directory                           = output_ri_rift
 set Timing output frequency                    = 1
 set Pressure normalization                     = no
@@ -46,15 +46,15 @@ subsection Geometry model
   end
 end
 
-# Adaptively refine to 1 km below 1573 K, 2 km below 1615 K
+# Adaptively refine to 500 m below 1573 K, 2 km below 1615 K
 subsection Mesh refinement
   set Initial global refinement          = 0
-  set Initial adaptive refinement        = 2
+  set Initial adaptive refinement        = 3
   set Time steps between mesh refinement = 1
 
   set Strategy = isosurfaces
   subsection Isosurfaces
-    set Isosurfaces = 2,2,  Temperature: 273|1573; 1,1, Temperature: 1573|1615
+    set Isosurfaces = 3,3,  Temperature: 273|1573; 1,1, Temperature: 1573|1615
   end
 end
 
@@ -75,7 +75,7 @@ subsection Solver parameters
     set Max Newton line search iterations        = 5
     set Max pre-Newton nonlinear iterations      = 100
     set Maximum linear Stokes solver tolerance   = 1e-5
-    set Nonlinear Newton solver switch tolerance = 1e-5
+    set Nonlinear Newton solver switch tolerance = 1e-6
     set SPD safety factor                        = 0.9
     set Stabilization preconditioner             = SPD
     set Stabilization velocity block             = SPD
@@ -253,6 +253,9 @@ subsection Material model
     set End plasticity strain weakening intervals    = 1.5
     set Cohesion strain weakening factors            = XXX
     set Friction strain weakening factors            = XXX
+
+    set Use plastic damper       = true
+    set Plastic damper viscosity = 1e21
 
   end
 end

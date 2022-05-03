@@ -46,15 +46,15 @@ subsection Geometry model
   end
 end
 
-# Adaptively refine to 1 km below 1573 K, 2 km below 1615 K
+# Adaptively refine to 250 m below 1573 K, 2 km below 1615 K
 subsection Mesh refinement
   set Initial global refinement          = 0
-  set Initial adaptive refinement        = 2
+  set Initial adaptive refinement        = 4
   set Time steps between mesh refinement = 1
 
   set Strategy = isosurfaces
   subsection Isosurfaces
-    set Isosurfaces = 2,2,  Temperature: 273|1573; 1,1, Temperature: 1573|1615
+    set Isosurfaces = 4,4,  Temperature: 273|1573; 1,1, Temperature: 1573|1615
   end
 end
 
@@ -253,6 +253,9 @@ subsection Material model
     set End plasticity strain weakening intervals    = 1.5
     set Cohesion strain weakening factors            = XXX
     set Friction strain weakening factors            = XXX
+
+    set Use plastic damper       = true
+    set Plastic damper viscosity = 1e21
 
   end
 end

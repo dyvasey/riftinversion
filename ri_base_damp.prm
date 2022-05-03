@@ -254,6 +254,9 @@ subsection Material model
     set Cohesion strain weakening factors            = XXX
     set Friction strain weakening factors            = XXX
 
+    set Use plastic damper       = true
+    set Plastic damper viscosity = 1e21
+
   end
 end
 
