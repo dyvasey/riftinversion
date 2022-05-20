@@ -16,4 +16,8 @@ gtherm_60 = gph.geotherm(thicknesses=[20,20,20],heat_flow=0.07230)
 gtherm_100_deep = gph.geotherm(thicknesses=[20,20,60],heat_flow=0.05296,
                                depth=600)
 
+gtherm_60_deep = gph.geotherm(thicknesses=[20,20,20],heat_flow=0.07230,depth=600)
+
+gtherm_120_deep = gph.geotherm(thicknesses=[20,20,80],heat_flow=0.04812,depth=600)
+
 
