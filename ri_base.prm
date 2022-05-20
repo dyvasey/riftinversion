@@ -73,15 +73,7 @@ subsection Solver parameters
     set Linear solver tolerance = 1e-7
   end
   subsection Newton solver parameters
-    set Max Newton line search iterations        = 5
-    set Max pre-Newton nonlinear iterations      = 100
     set Maximum linear Stokes solver tolerance   = 1e-5
-    set Nonlinear Newton solver switch tolerance = 1e-6
-    set SPD safety factor                        = 0.9
-    set Stabilization preconditioner             = SPD
-    set Stabilization velocity block             = SPD
-    set Use Newton failsafe                      = false
-    set Use Newton residual scaling method       = false
     set Use Eisenstat Walker method for Picard iterations = true
   end
 end
@@ -149,6 +141,7 @@ end
 subsection Boundary composition model
   set Fixed composition boundary indicators  = bottom, left, right
   set Model name = initial composition
+  set Allow fixed composition on outflow boundaries = true
 end
 
 # Temperature boundary conditions
