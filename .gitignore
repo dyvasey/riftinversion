@@ -15,6 +15,7 @@ composition.txt
 !run_base*
 
 !lab_notebooks_archived/
+!plotting_scripts/
 
 !tchron/
 !tchron/tests/
