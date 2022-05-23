@@ -1,8 +1,9 @@
-name: aspect
+name: riftinversion
 channels:
   - conda-forge
   - defaults
 dependencies:
+  - python=3.10
   - pandas
   - jupyter
   - numpy
@@ -11,4 +12,4 @@ dependencies:
   - pyvista
   - scipy
   - joblib
-prefix: C:\Users\dyvas\miniconda3\envs\aspect
+  - opencv

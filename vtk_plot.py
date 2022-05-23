@@ -12,7 +12,7 @@ from joblib import Parallel,delayed
 from scipy.spatial import KDTree
 from matplotlib import cm,colors
 
-from tchron import tchron as tc
+from .tchron import tchron as tc
 
 def plot2D(file,field,bounds,ax=None,contours=False,colorbar=False,
          cfields=['crust_upper','crust_lower','mantle_lithosphere'],
