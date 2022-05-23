@@ -11,6 +11,7 @@ composition.txt
 *.pdf
 *.vtu
 *.vtm
+*.mp4
 !ri_base*
 !run_base*
 

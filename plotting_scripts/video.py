@@ -1,6 +1,6 @@
 """
-Basic video plotter from command line. Requires 3 arguments: directory, time covered by model, 
-and time between model outputs
+Basic video plotter from command line. Requires 4 arguments: directory, time covered by model, 
+time between model outputs, and output file
 """
 import sys
 import os
@@ -13,15 +13,15 @@ import pyvista as pv
 
 from tqdm import tqdm
 
-from .. import vtk_plot as vp
+from riftinversion import vtk_plot as vp
 
 pv.start_xvfb()
 
 directory = sys.argv[1]
-time = sys.argv[2]
-model_step = sys.argv[3]
+time = float(sys.argv[2])
+model_step = float(sys.argv[3])
 
-nsteps = time/model_step
+nsteps = int(time/model_step)
 
 timesteps = np.arange(0,nsteps,1)
 
@@ -86,7 +86,7 @@ frame = cv2.imread(img_paths[0])
 height,width,layers = frame.shape
 
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-video = cv2.VideoWriter('rift_inversion_base.mp4', fourcc, 4, (width,height))
+video = cv2.VideoWriter(sys.argv[4], fourcc, 4, (width,height))
 
 for img in img_paths:
     video.write(cv2.imread(img))
