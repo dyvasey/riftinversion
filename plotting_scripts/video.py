@@ -23,7 +23,7 @@ model_step = float(sys.argv[3])
 
 nsteps = int(time/model_step)
 
-timesteps = np.arange(0,nsteps,1)
+timesteps = np.arange(0,nsteps+1,1)
 
 files = vp.get_pvtu(directory,timesteps)
 
