@@ -47,7 +47,7 @@ bar=True
 # Get scalar range
 for k,step in enumerate(tqdm(timesteps)):
     time = step*model_step
-    time_str = str(step/2).zfill(4).replace('.','-')
+    time_str = str(round(step/2,1)).zfill(5).replace('.','-')
     
     fig,axs = plt.subplots(2,2,dpi=300,figsize=(8.5,11))
     
