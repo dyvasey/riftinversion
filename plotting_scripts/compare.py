@@ -1,5 +1,5 @@
 """
-Compare two models from command line. Requires 4 arguments: directory1, time1, directory2, time2
+Compare two models from command line. Requires 6 arguments: directory1, time1, directory2, time2
 timestep, and output image
 """
 import sys
