@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def lthickness(text,lthick,depth=400):
+def lthickness(text,lthick,depth=600):
     """
     Replace thermal values and other parameters to alter lithosphere thickness
     
@@ -45,6 +45,14 @@ def lthickness(text,lthick,depth=400):
     
     # Replace temperature function expression
     text = text.replace('(h-y)<=XXX','(h-y)<='+str(lthick)+'.e3')
+
+    # Replace AMR values
+    amr_vals = pd.read_csv('amr_temps.csv')
+    amr_150 = int(amr_vals['t150_'+str(lthick)])
+    amr_250 = int(amr_vals['t250_'+str(lthick)])
+    old = '    set Isosurfaces = 2,2,  Temperature: 273|XXX; 1,1, Temperature: XXX|XXX'
+    new = '    set Isosurfaces = 2,2,  Temperature: 273|' + amr_150 + '; 1,1, Temperature: ' + amr_150 + '|' + amr_250
+    text = text.replace(old,new)
     
     return(text)
 
@@ -135,8 +143,8 @@ def strain_softening(text,value):
     
     return(text)
     
-def generate(file='ri_base.prm',lthick=100,depth=400,evel=1,etime=50,soft=0.333,
-             p1=250,p2=150,output='.',
+def generate(file='ri_base.prm',lthick=100,depth=600,evel=1,etime=50,soft=0.375,
+             p1=400,p2=200,output='.',
              shell='run_base.sh',ver='',nodes=1):
     """
     Generate .prm file from dummy base file.
