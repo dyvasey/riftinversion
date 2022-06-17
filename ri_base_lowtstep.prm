@@ -9,7 +9,7 @@ set Nonlinear solver tolerance                 = 1e-5
 set Max nonlinear iterations                   = 1000
 set Max nonlinear iterations in pre-refinement = 5
 set CFL number                                 = 0.5
-set Maximum time step                          = 20e3
+set Maximum time step                          = 10e3
 set Output directory                           = output_ri_rift
 set Timing output frequency                    = 1
 set Pressure normalization                     = no
@@ -278,12 +278,12 @@ set List of postprocessors = basic statistics, composition statistics, heat flux
         set Number of particles per cell per direction = 7
       end
     end
-    set Time between data output    = 500.e3
+    set Time between data output    = 100.e3
     set Data output format          = vtu
   end
   subsection Visualization
     set List of output variables      = adiabat, density, heat flux map, named additional outputs, strain rate, viscosity
-    set Time between graphical output = 500.e3
+    set Time between graphical output = 100.e3
     set Interpolate output            = false
     set Write higher order output     = false
     set Output format                 = vtu
@@ -292,7 +292,7 @@ set List of postprocessors = basic statistics, composition statistics, heat flux
   end
   subsection Topography
     set Output to file           = true
-    set Time between text output = 500.e3
+    set Time between text output = 100.e3
   end
 end
 
