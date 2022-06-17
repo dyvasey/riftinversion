@@ -34,6 +34,6 @@ t150_120 = gtherm_120_deep[3][150]
 t250_120 = gtherm_120_deep[3][250]
 
 output = pd.Series(data=np.concatenate((t150_80,t250_80,t150_120,t250_120),axis=None),
-                   index=['t150_80','t250_80','t150_80','t250_80'])
+                   index=['t150_80','t250_80','t150_120','t250_120'])
 
 output.to_csv('amr_temps.csv')
