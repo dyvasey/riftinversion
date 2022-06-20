@@ -22,6 +22,10 @@ gtherm_100_deep = gph.geotherm(thicknesses=[20,20,60],heat_flow=0.05296,
 gtherm_60_deep = gph.geotherm(thicknesses=[20,20,20],heat_flow=0.07230,depth=600)
 
 # Actually used for production runs
+gtherm_60_ = gph.geotherm(thicknesses=[20,20,20],heat_flow=0.07230,depth=600)
+
+t150_60 = gtherm_60_deep[3][150]
+t250_60 = gtherm_60_deep[3][250]
 
 gtherm_80_deep = gph.geotherm(thicknesses=[20,20,40],heat_flow=0.06021,depth=600)
 
@@ -33,7 +37,7 @@ gtherm_120_deep = gph.geotherm(thicknesses=[20,20,80],heat_flow=0.04812,depth=60
 t150_120 = gtherm_120_deep[3][150]
 t250_120 = gtherm_120_deep[3][250]
 
-output = pd.Series(data=np.concatenate((t150_80,t250_80,t150_120,t250_120),axis=None),
-                   index=['t150_80','t250_80','t150_120','t250_120'])
+output = pd.Series(data=np.concatenate((t150_60,t250_60,t150_80,t250_80,t150_120,t250_120),axis=None),
+                   index=['t150_60','t250_60','t150_80','t250_80','t150_120','t250_120'])
 
 output.to_csv('amr_temps.csv')
