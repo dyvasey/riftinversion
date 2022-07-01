@@ -69,7 +69,7 @@ end
 # Solver parameters
 subsection Solver parameters
   subsection Stokes solver parameters
-    set Number of cheap Stokes solver steps = 0
+    set Number of cheap Stokes solver steps = 1000
     set Linear solver tolerance = 1e-7
   end
   subsection Newton solver parameters
