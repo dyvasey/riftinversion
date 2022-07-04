@@ -62,7 +62,7 @@ for k,step in enumerate(tqdm(timesteps)):
     
     axs = axs.flatten()
 
-    axs[0].set_title(time_str +' Ma',loc='left')
+    axs[0].set_title(str(round(time,1)) +' Ma',loc='left')
     
     axs[1].set_title('Strain',loc='center')
     
