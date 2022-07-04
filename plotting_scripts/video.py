@@ -4,6 +4,7 @@ time between model outputs, and output file
 """
 import sys
 import os
+import shutil
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -28,7 +29,15 @@ timesteps = np.arange(0,nsteps+1,1)
 files = vp.get_pvtu(directory,timesteps)
 
 image_dir = 'images/'
-os.makedirs(image_dir,exist_ok=True)
+
+try:
+    shutil.rmtree(image_dir)
+except:
+    print("Creating new image directory...")
+else:
+    print("Cleared existing image directory...")
+
+os.makedirs(image_dir,exist_ok=False)
 
 colors=['#99CCCC','#996633','#990000','#339966']
 cm = ListedColormap(colors)
@@ -53,7 +62,7 @@ for k,step in enumerate(tqdm(timesteps)):
     
     axs = axs.flatten()
 
-    axs[0].set_title(str(time)+' Ma',loc='left')
+    axs[0].set_title(time_str +' Ma',loc='left')
     
     axs[1].set_title('Strain',loc='center')
     
@@ -86,7 +95,10 @@ frame = cv2.imread(img_paths[0])
 height,width,layers = frame.shape
 
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-video = cv2.VideoWriter(sys.argv[4], fourcc, 4, (width,height))
+
+frate = 2/model_step
+
+video = cv2.VideoWriter(sys.argv[4], fourcc, frate, (width,height))
 
 for img in img_paths:
     video.write(cv2.imread(img))
