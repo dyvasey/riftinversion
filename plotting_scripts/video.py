@@ -67,7 +67,7 @@ for k,step in enumerate(tqdm(timesteps)):
     axs[1].set_title('Strain',loc='center')
     
     vp.plot2D(files[k],'comp_field',bounds=[250,750,450,620],ax=axs[0],
-              cmap=cm,colorbar=False)
+              cmap=cm,colorbar=False,contours=True)
     vp.plot2D(files[k],'plastic_strain',bounds=[250,750,450,620],ax=axs[1],
               cmap=opaque_cm,colorbar=bar,clim=lim_strain)
 
