@@ -56,7 +56,7 @@ def lthickness(text,lthick,depth=600):
     
     return(text)
 
-def evelocity(text,evel,p1=250e3,p2=150e3):
+def evelocity(text,evel,p1=400e3,p2=200e3,quiescence=False,v1=None,v2=None,start=None,end=None):
     """
     Add extension velocity
     
@@ -67,22 +67,53 @@ def evelocity(text,evel,p1=250e3,p2=150e3):
     Returns:
         text: Altered prm string
     """
-        
-    # Convert total velocity in cm/yr to half velocity in m/yr
-    v = (evel/2)/100
-    
-    # Get slope based on extension velocity and transition to outflow depth
-    s = (v*2)/(p2-p1)
-    
     base = 'XXX' # Dummy value in in base file
-     
-    old = 'v='+base
-    new = 'v='+str(v)
-    text = text.replace(old,new)
     
-    old = 's='+base
-    new = 's='+str(s)
-    text = text.replace(old,new)
+    if quiescence==False:
+        # Convert total velocity in cm/yr to half velocity in m/yr
+        v = (evel/2)/100
+        
+        # Get slope based on extension velocity and transition to outflow depth
+        s = (v*2)/(p2-p1)
+        
+        old = 'v='+base
+        new = 'v='+str(v)
+        text = text.replace(old,new)
+        
+        old = 's='+base
+        new = 's='+str(s)
+        text = text.replace(old,new)
+
+    elif quiescence==True:
+        v1_half = (v1/2)/100
+        old = 'v1='+base
+        new = 'v1='+str(v1_half)
+        text = text.replace(old,new)
+
+        v2_half = (v2/2)/100
+        old = 'v2='+base
+        new = 'v2='+str(v2_half)
+        text = text.replace(old,new)
+
+        s1 = (v1_half*2)/(p2-p1)
+        old = 's1='+base
+        new = 's1='+str(s1)
+        text = text.replace(old,new)
+
+        s2 = (v2_half*2)/(p2-p1)
+        old = 's2='+base
+        new = 's2='+str(s2)
+        text = text.replace(old,new)
+
+        t1 = start*1e6 + 1e6
+        old = 't1='+base
+        new = 't1='+str(t1)
+        text = text.replace(old,new)
+
+        t2 = end*1e6 - 1e6
+        old = 't2='+base
+        new = 't2='+str(t2)
+        text = text.replace(old,new)
     
     return(text)
 
@@ -145,7 +176,8 @@ def strain_softening(text,value):
     
 def generate(file='ri_base.prm',lthick=100,depth=600,evel=1,etime=50,soft=0.375,
              p1=400,p2=200,output='.',
-             shell='run_base.sh',ver='',nodes=1):
+             shell='run_base.sh',ver='',nodes=1,
+             quiescence=False,v1=None,v2=None,start=None,end=None):
     """
     Generate .prm file from dummy base file.
     
@@ -188,7 +220,8 @@ def generate(file='ri_base.prm',lthick=100,depth=600,evel=1,etime=50,soft=0.375,
     with open(path) as f_prm: # Open the file
         contents = f_prm.read() # Read file into string
         contents = lthickness(contents,lthick,depth)
-        contents = evelocity(contents,evel,p1_m,p2_m)
+        contents = evelocity(contents,evel,p1_m,p2_m,
+            quiescence,v1,v2,start,end=etime)
         contents = time(contents,etime)
         contents = strain_softening(contents,soft)
         if 'XXX' in contents:

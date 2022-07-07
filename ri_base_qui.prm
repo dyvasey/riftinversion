@@ -102,28 +102,28 @@ subsection Boundary velocity model
     set Function expression = if( x<w/2., \
                                 if( t<t1, \
                                     if ( y>p1, \
-                                        -v1, \
+                                        -v1 * ((t1-t)/1.e6), \
                                         if ( y<=p1 && y>p2, \
-                                                s1 * (y - p1) + -v1, \
-                                                v1 ) ), \
+                                                s1 * ((t1-t)/1.e6) * (y - p1) + -v1 * ((t1-t)/1.e6), \
+                                                v1 * ((t1-t)/1.e6) ) ), \
                                     if( t>=t1 && t<=t2, 0, \
                                         if ( y>p1, \
-                                            v2, \
+                                            v2 * ((t-t2)/1.e6), \
                                             if ( y<=p1 && y>p2, \
-                                                    -1*s2 * (y - p1) + v2, \
-                                                    -v2) ) ) ), \
+                                                    -1*s2  * ((t-t2)/1.e6) * (y - p1) + v2  * ((t-t2)/1.e6), \
+                                                    -v2  * ((t-t2)/1.e6)) ) ) ), \
                                 if( t<t1, \
                                     if ( y>p1, \
-                                        v1, \
+                                        v1 * ((t1-t)/1.e6), \
                                         if ( y<=p1 && y>p2, \
-                                                -1*s1 * (y - p1) + v1, \
-                                                -v1) ), \ 
+                                                -1*s1 * ((t1-t)/1.e6) * (y - p1) + v1 * ((t1-t)/1.e6), \
+                                                -v1 * ((t1-t)/1.e6) ) ), \ 
                                     if( t>=t1 && t<=t2, 0, \
                                         if ( y>p1, \
-                                            -v2, \
+                                            -v2 * ((t-t2)/1.e6), \
                                             if ( y<=p1 && y>p2, \
-                                                    s2 * (y - p1) + -v2, \
-                                                    v2) ) ) ) ); \                    
+                                                    s2 * ((t-t2)/1.e6) * (y - p1) + -v2 * ((t-t2)/1.e6), \
+                                                    v2 * ((t-t2)/1.e6)) ) ) ) ); \                    
                                 0;
   end
 end
