@@ -4,6 +4,7 @@ Script to plot initial rift inversion production results (July 2022)
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
+import pyvista as pv
 
 import vtk_plot as vp
 
@@ -53,6 +54,14 @@ for k,model in enumerate(models):
     suffix = r'/output_ri_rift/solution'
     pvtu_dir = base_dir + models[k] + suffix
     
+    # Get meshes with rift-side information
+    side_dir = r'~/git/gdmate/processing/figs/'
+    side_dir_rift = side_dir + models[k] + '/' +models[k] + '_0.vtu'
+    side_dir_invert = side_dir + models[k] + '/' +models[k] + '_10.vtu'
+    
+    if model=='071322_rip':
+        side_dir_invert = side_dir + models[k] + '/' +models[k] + '_9.vtu'
+    
     # Figure out appropriate timesteps
     tstep_initial = 0
     tstep_rift = int(times[k]/tstep_interval)
@@ -67,6 +76,12 @@ for k,model in enumerate(models):
     for column in range(3):
         vp.plot2D(files[column],'comp_field',bounds=bounds,ax=axs[k,column],
                   cmap=cm,contours=True)
+
+        
+    vp.plot2D(side_dir_rift,'rift_side',bounds=bounds,ax=axs[k,1])
+    vp.plot2D(side_dir_invert,'rift_side',bounds=bounds,ax=axs[k,2])
+    
+    for column in range(3):
         vp.plot2D(files[column],'noninitial_plastic_strain',bounds=bounds,ax=axs[k,column],
                   cmap=cm_strain,opacity=opacity_strain,clim=lim_strain)
     
