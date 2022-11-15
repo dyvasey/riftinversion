@@ -9,18 +9,18 @@ import pyvista as pv
 import vtk_plot as vp
 
 # The following 8 models need to be plotted
-# slow_cold_half 063022_rip_c
-# slow_cold_half_qui 071822_rip_b
-# slow_cold_full 070422_rip_e
-# slow_cold_full_qui 072022_rip_a
-# hot_fast_half 070422_rip_c
-# hot_fast_half_qui 071322_rip
-# hot_fast_full 070622_rip_a
-# hot_fast_full_qui 072022_rip_b
+# slow_cold_half 080122_rip_a
+# slow_cold_half_qui 080122_rip_e
+# slow_cold_full 080122_rip_b
+# slow_cold_full_qui 080122_rip_f
+# hot_fast_half 080122_rip_c
+# hot_fast_half_qui 080122_rip_g
+# hot_fast_full 080122_rip_d
+# hot_fast_full_qui 080122_rip_h
 
 # Make list of models with appropriate names
-models = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
-          '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b']
+models = ['080122_rip_a','080122_rip_e','080122_rip_b','080122_rip_f',
+          '080122_rip_c','080122_rip_g','080122_rip_d','080122_rip_h']
 
 names = ['Slow/Cold Half-Breakup','Slow/Cold Half-Breakup w/ Cooling',
          'Slow/Cold Full-Breakup','Slow/Cold Full-Breakup w/ Cooling',
@@ -43,7 +43,7 @@ cm = ListedColormap(colors)
 # Set opacity for strain
 opacity_strain = [0,0.7,0.7,0.7,0.7]
 lim_strain = [0,5]
-cm_strain = 'inferno'
+cm_strain = 'Purples'
 
 # Do the loop to plot
 
@@ -55,17 +55,22 @@ for k,model in enumerate(models):
     pvtu_dir = base_dir + models[k] + suffix
     
     # Get meshes with rift-side information
-    side_dir = r'~/git/gdmate/processing/figs/'
-    side_dir_rift = side_dir + models[k] + '/' +models[k] + '_0.vtu'
-    side_dir_invert = side_dir + models[k] + '/' +models[k] + '_10.vtu'
+    #side_dir = r'~/git/gdmate/processing/figs/'
+    #side_dir_rift = side_dir + models[k] + '/' +models[k] + '_0.vtu'
+    #side_dir_invert = side_dir + models[k] + '/' +models[k] + '_10.vtu'
     
-    if model=='071322_rip':
-        side_dir_invert = side_dir + models[k] + '/' +models[k] + '_9.vtu'
+    #if model=='071322_rip':
+    #    side_dir_invert = side_dir + models[k] + '/' +models[k] + '_9.vtu'
     
     # Figure out appropriate timesteps
     tstep_initial = 0
     tstep_rift = int(times[k]/tstep_interval)
-    tstep_invert = int((times[k]+20)/tstep_interval)
+    tstep_invert = int((times[k]+4)/tstep_interval)
+    
+    if model == '080122_rip_a':
+        tstep_invert = 194
+    if model =='080122_rip_e':
+        tstep_invert = 395
     
     tsteps = np.array([tstep_initial,tstep_rift,tstep_invert])
     
@@ -85,14 +90,14 @@ for k,model in enumerate(models):
         vp.plot2D(files[column],'noninitial_plastic_strain',bounds=bounds,ax=axs[k,column],
                   cmap=cm_strain,opacity=opacity_strain,clim=lim_strain)
     
-    axs[k,0].set_title(names[k])
+    axs[k,0].set_title(names[k]+ ' - Fast')
     axs[k,1].set_title('Rift: '+ str(times[k]) + ' Myr')
-    axs[k,2].set_title('Inversion: '+ str(times[k]+20) + ' Myr')
+    axs[k,2].set_title('Inversion: '+ str(tstep_invert*tstep_interval) + ' Myr')
         
 plt.tight_layout()
     
     
-fig.savefig('initial_production.pdf')
+fig.savefig('initial_production_fast.pdf')
     
 
 

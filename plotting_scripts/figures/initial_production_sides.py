@@ -78,8 +78,8 @@ for k,model in enumerate(models):
                   cmap=cm,contours=True)
 
         
-    #vp.plot2D(side_dir_rift,'rift_side',bounds=bounds,ax=axs[k,1])
-    #vp.plot2D(side_dir_invert,'rift_side',bounds=bounds,ax=axs[k,2])
+    vp.plot2D(side_dir_rift,'rift_side',bounds=bounds,ax=axs[k,1])
+    vp.plot2D(side_dir_invert,'rift_side',bounds=bounds,ax=axs[k,2])
     
     for column in range(3):
         vp.plot2D(files[column],'noninitial_plastic_strain',bounds=bounds,ax=axs[k,column],
@@ -92,7 +92,7 @@ for k,model in enumerate(models):
 plt.tight_layout()
     
     
-fig.savefig('initial_production.pdf')
+fig.savefig('initial_production_sides.pdf')
     
 
 

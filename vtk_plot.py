@@ -16,7 +16,8 @@ from tchron import tchron as tc
 
 def plot2D(file,field,bounds,ax=None,contours=False,colorbar=False,
          cfields=['crust_upper','crust_lower','mantle_lithosphere'],
-         null_field='asthenosphere',**kwargs):
+         null_field='asthenosphere',contour_color='black',
+         contours_only=False,**kwargs):
     """
     Plot 2D ASPECT results using Pyvista.
 
@@ -55,14 +56,16 @@ def plot2D(file,field,bounds,ax=None,contours=False,colorbar=False,
     sargs = dict(width=0.6,fmt='%.1e',height=0.2,label_font_size=32,
                  position_x=0.1)
     
-    plotter.add_mesh(mesh,scalars=field,scalar_bar_args=sargs,**kwargs)
+    
+    if contours_only==False:
+        plotter.add_mesh(mesh,scalars=field,scalar_bar_args=sargs,**kwargs)
     
     if contours ==True:
-        plotter.add_mesh(cntrs,color='black',line_width=5)
+        plotter.add_mesh(cntrs,color=contour_color,line_width=5)
     
     plotter.view_xy()
     
-    if colorbar==False:
+    if (colorbar==False)&(contours_only==False):
         plotter.remove_scalar_bar()
     
     plotter.enable_depth_peeling(10)
