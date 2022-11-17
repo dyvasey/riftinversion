@@ -109,9 +109,14 @@ def plot2D(file,field,bounds,ax=None,contours=False,colorbar=False,
     return(ax)
 
 def add_colorbar(fig,vmin=None,vmax=None,cmap='viridis',location=[0.1,0.08,0.8,0.02],
-                 orientation='horizontal',**kwargs):
+                 orientation='horizontal',log=False,**kwargs):
     cax = fig.add_axes(location)
-    norm = colors.Normalize(vmin=vmin,vmax=vmax)
+    
+    if log==False:
+        norm = colors.Normalize(vmin=vmin,vmax=vmax)
+        
+    if log==True:
+        norm = colors.LogNorm(vmin=vmin,vmax=vmax)
     mappable = cm.ScalarMappable(norm=norm,cmap=cmap)
     cbar = plt.colorbar(mappable,cax=cax,orientation=orientation,**kwargs)
     

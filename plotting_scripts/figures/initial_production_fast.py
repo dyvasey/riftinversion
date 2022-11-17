@@ -43,7 +43,7 @@ cm = ListedColormap(colors)
 # Set opacity for strain
 opacity_strain = [0,0.7,0.7,0.7,0.7]
 lim_strain = [0,5]
-cm_strain = 'Purples'
+cm_strain = 'inferno'
 
 # Do the loop to plot
 
