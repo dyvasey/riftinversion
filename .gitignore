@@ -25,3 +25,5 @@ composition.txt
 
 !sample_data/vtk_tchron_test.vtm
 !sample_data/vtk_tchron_test/*.vtu
+
+!/model_files/M01_063022_rip_c/*.prm
