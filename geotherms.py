@@ -29,9 +29,6 @@ t250_60 = gtherm_60_deep[3][250]
 
 gtherm_80_deep = gph.geotherm(thicknesses=[20,20,40],heat_flow=0.06021,depth=600)
 
-# Use only for thin crust model!
-#gtherm_80_deep = gph.geotherm(thicknesses=[15,15,50],heat_flow=0.05588,depth=600)
-
 t150_80 = gtherm_80_deep[3][150]
 t250_80 = gtherm_80_deep[3][250]
 
