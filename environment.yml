@@ -1,9 +1,11 @@
 name: riftinversion
 channels:
+  - davasey
   - conda-forge
   - defaults
 dependencies:
   - python=3.10
+  - geoscripts
   - pandas
   - jupyter
   - numpy

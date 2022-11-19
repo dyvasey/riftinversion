@@ -1,6 +1,7 @@
 # Rift Inversion in ASPECT Project
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dyvasey/riftinversion/HEAD)
 
 Includes current source files (.prm, .py,.sh) used in the [ASPECT](https://github.com/geodynamics/aspect) rift inversion project, as well as lab notebooks (.ipynb) detailing modeling history. Models are currently being run on Stampede2 with ASPECT 9.4.0-pre and [dealii 9.3.0](https://github.com/dealii/dealii). Some functions are imported from my [geoscripts](https://github.com/dyvasey/geoscripts) repository.
 
