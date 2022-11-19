@@ -18,6 +18,7 @@ There are serveral Python modules (.py) that are designed to be imported and use
 These are `.py` files that use the modules above in support of ASPECT rift inversion models:
 
 * `geotherms.py`  - scripts to generate geothermal gradient values used by `ripropagate.py` to populate `.prm` files, using the [geoscripts](https://github.com/dyvasey/geoscripts]) package.
+* Scripts under `plotting_scripts/` - scripts used to create figures for publication, using raw output data stored on a local machine.
 
 ### Jupyter Notebooks
 The `lab_notebooks_archived/` directory contains Jupyter notebooks logging model runs for this project. Note that to actually use these, the notebook needs to be moved to the main repository directory and the repository would need to be reverted to the commit from when the notebook cell was created.
