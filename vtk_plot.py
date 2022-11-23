@@ -122,78 +122,6 @@ def add_colorbar(fig,vmin=None,vmax=None,cmap='viridis',location=[0.1,0.08,0.8,0
     
     return(cax)
 
-def plot_manual(file,field='density',bounds=None,contours=False,
-         cfields=['crust_upper','crust_lower','mantle_lithosphere'],
-         null_field='asthenosphere',off_screen=True,output='img.png',
-         camera=None,**kwargs):
-    """
-    Plot 2D ASPECT results using Pyvista. This function is deprecated.
-    
-    Best practice is to employ this function twice, once to determine the
-    appropriate camera value with off_screen=False and camera=None, and a
-    second time with off_screen=True and the camera specified. Off_screen=
-    False triggers an interactive window where the camera can be adjusted.
-    Specifying bounds will clip the image and can help ensure that the camera
-    position is correct; some trial and error may be necessary.
-
-    Parameters
-    ----------
-    file : VTU or PVTU file to plot
-    field : Field to use for color. The default is 'density'.
-    bounds : Bounds by which to clip the plot. The default is None.
-    contours : Boolean for whether to add temperature contours. 
-        The default is False.
-    cfields : Names of compositional fields to use if field is 'comp_field.' 
-        The default is ['crust_upper','crust_lower','mantle_lithosphere'].
-    null_field : Null field if field is 'comp_field.'
-        The default is 'asthenosphere'.
-    off_screen : Boolean for whether Pyvista plotting occurs off-screen.
-        The default is True.
-    output : Name of image file to output screenshot
-    camera : Position for Pyvista camera. Needs to be a list
-        with focal point, position, and viewup. The default is None.
-
-    Returns
-    -------
-    cpos: Camera position if plotting onscreen [focal point, position,viewup]
-    img : img object that can be saved or plotted.
-
-    """
-    
-    mesh = pv.read(file)
-    
-    if bounds is not None:
-        mesh = mesh.clip_box(bounds=bounds,invert=False)
-    
-    if field=='comp_field':
-        mesh = comp_field_vtk(mesh,fields=cfields,null_field=null_field)
-    
-    if contours==True:
-        cntrs = add_contours(mesh)
-    
-    pv.set_plot_theme("document")
-    plotter = pv.Plotter(off_screen=off_screen)
-    
-    plotter.add_mesh(mesh,scalars=field,**kwargs)
-    
-    if contours ==True:
-        plotter.add_mesh(cntrs,color='black',line_width=5)
-    
-    plotter.view_xy()
-    plotter.remove_scalar_bar()
-
-    plotter.window_size = 1200,660
-    if camera is not None:
-        plotter.camera_position = camera
-        plotter.camera_set = True
-    if off_screen==False:
-        cpos = plotter.show(screenshot='output')
-        return(cpos)
-    else:
-        img = plotter.screenshot(output,transparent_background=True,
-                             return_img=True)
-        return(img)
-
 def add_contours(mesh,field='T',values=np.arange(500,1700,200)):
     """
     Add contours to mesh in Pyvista.
@@ -246,56 +174,12 @@ def comp_field_vtk(mesh,fields=['crust_upper','crust_lower','mantle_lithosphere'
     mesh.point_data['comp_field'] = output
     return(mesh)
 
-def He_age_vtk(meshes,system,time_interval,filename='mesh_He.vtu',
-               U=100,Th=100,radius=50):
-    """
-    Deprecated in favor of He_age_vtk_parallel
-    """
-    # Isolate final mesh
-    final_mesh = meshes[-1]
-    
-    # Get all particle ids for final mesh
-    ids = pv.point_array(final_mesh,'id')
-    
-    # Create empty np array
-    output = np.zeros(shape=ids.shape)
-    
-    # Get particles that appear in all meshes
-    particles = allmeshes_particles(meshes)
-    
-    # Extract ids and temps for each mesh
-    all_ids,all_temps = extract_temps(meshes)
-    
-    print('Calculating He Ages...')
-    
-    # Loop through particles
-    
-    for k,particle in enumerate(tqdm(ids)):
-        if particle in particles:
-            # Get Tt path
-            tt = get_tt_path(all_ids,all_temps,particle.astype(int),
-                                     disable_tqdm=True)
-            
-            # Model age
-            age,vol,pos = tc.forward_model(
-                U,Th,radius,tt,time_interval,system=system,
-                print_age=False)
-        else:
-            age = np.nan
-            
-        output[k] = age
-
-    # Assign array to mesh and return mesh
-    final_mesh.point_data[system] = output
-    
-    # Save mesh to file
-    final_mesh.save(filename)
-    
-    return(final_mesh)
-
 def He_age_vtk_parallel(meshes,system,time_interval,filename='meshes_He.vtm',
                U=100,Th=100,radius=50,batch_size=100,processes=os.cpu_count()-2,
                He_profile_nodes=513,interpolate_profile=True,all_timesteps=True):
+    """
+    Function to do parallel He forward modeling of ASPECT VTK data.
+    """
     
     # Isolate final mesh
     final_mesh = meshes[-1]
@@ -360,27 +244,11 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='meshes_He.vtm',
     
     return(meshes)
 
-def parallel_He_age(particle,inputs):
-    """
-    Deprecated in favor of particle_He_profile
-    """
-    particles,all_ids,all_temps,U,Th,radius,time_interval,system = inputs
-    
-    if particle in particles:
-        # Get Tt path
-        tt = get_tt_path(all_ids,all_temps,particle.astype(int),
-                                 disable_tqdm=True)
-        
-        # Model age
-        age,vol,pos = tc.forward_model(
-            U,Th,radius,tt,time_interval,system=system,
-            print_age=False)
-    else:
-        age = np.nan
-        
-    return(age)
-
 def particle_He_profile(particle,inputs,calc_age,interpolate_profile):
+    
+    """
+    Function to calculate He profile for a particular ASPECT particle.
+    """
     
     # Unpack inputs
     (k,positions,old_positions,ids,old_ids,temps,old_profiles,
