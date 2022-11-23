@@ -207,13 +207,32 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='meshes_He.vtm',
             old_ids = all_ids[k-1] # Get ids for previous profiles
             old_positions = all_positions[k-1]
         else:
+            # Set up empty arrays for first timestep
             old_profiles = np.empty((len(ids),He_profile_nodes))
             old_profiles.fill(np.nan)
             old_ids = np.ones(len(ids))*np.nan
             old_positions = np.ones(len(ids))*np.nan
         
-        inputs = (k,positions,old_positions,ids,old_ids,temps,old_profiles,
-                  U,Th,radius,time_interval,
+        # Set up KDTree for timestep if doing interpolation
+        if (k>0)&(interpolate_profile==True):
+            
+            # Get particle ids of particles with profiles
+            hasprofile = ~np.isnan(old_profiles).all(axis=1)
+            other_particles = old_ids[hasprofile]
+            
+            # Get positions of other particles
+            other_positions = old_positions[hasprofile]
+            print(other_positions)
+            
+            # Set up KDTree to find closest particle
+            tree = KDTree(other_positions)
+            
+        else:
+            tree=None
+            other_particles=None
+            
+        inputs = (k,positions,tree,ids,old_ids,temps,old_profiles,
+                  U,Th,radius,time_interval,other_particles,
                   system,He_profile_nodes)
             
         # Calculate ages on last timestep only if indicated
@@ -251,9 +270,9 @@ def particle_He_profile(particle,inputs,calc_age,interpolate_profile):
     """
     
     # Unpack inputs
-    (k,positions,old_positions,ids,old_ids,temps,old_profiles,
-     U,Th,radius,time_interval,system,
-     He_profile_nodes) = inputs
+    (k,positions,tree,ids,old_ids,temps,old_profiles,
+     U,Th,radius,time_interval,other_particles,
+     system,He_profile_nodes) = inputs
     
     # Get old profile for current particle if present
     array = old_profiles[particle==old_ids]
@@ -288,14 +307,14 @@ def particle_He_profile(particle,inputs,calc_age,interpolate_profile):
             particle_position = positions[ids==particle]
             
             # Get particle ids of particles with profiles
-            hasprofile = ~np.isnan(old_profiles).all(axis=1)
-            other_particles = old_ids[hasprofile]
+            # hasprofile = ~np.isnan(old_profiles).all(axis=1)
+            # other_particles = old_ids[hasprofile]
             
             # Get positions of other particles
-            other_positions = old_positions[hasprofile]
+            # other_positions = old_positions[hasprofile]
             
             # Find closest particle
-            distance,index = KDTree(other_positions).query(particle_position)
+            distance,index = tree.query(particle_position)
             
             # Get id of closest particle
             neighbor_id = other_particles[index]
