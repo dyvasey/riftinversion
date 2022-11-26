@@ -181,9 +181,6 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='meshes_He.vtm',
     Function to do parallel He forward modeling of ASPECT VTK data.
     """
     
-    # Isolate final mesh
-    final_mesh = meshes[-1]
-    
     # Extract ids, temps, and positions for each mesh
     all_ids,all_temps,all_positions = extract_temps_positions(meshes)
     
@@ -222,7 +219,6 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='meshes_He.vtm',
             
             # Get positions of other particles
             other_positions = old_positions[hasprofile]
-            print(other_positions)
             
             # Set up KDTree to find closest particle
             tree = KDTree(other_positions)
@@ -249,7 +245,7 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='meshes_He.vtm',
         output = (
             Parallel(n_jobs=processes,batch_size=batch_size,pre_dispatch=pre_dispatch)
             (delayed(particle_He_profile)
-             (particle,inputs,calc_age,interpolate_profile) for particle in tqdm(ids))
+             (particle,inputs,calc_age,interpolate_profile) for particle in tqdm(ids,position=0))
             )
         
         ages = [pair[0]for pair in output]
@@ -268,6 +264,8 @@ def particle_He_profile(particle,inputs,calc_age,interpolate_profile):
     """
     Function to calculate He profile for a particular ASPECT particle.
     """
+    # Use float32 to reduce memory usage
+    dtype=np.float32
     
     # Unpack inputs
     (k,positions,tree,ids,old_ids,temps,old_profiles,
@@ -279,7 +277,7 @@ def particle_He_profile(particle,inputs,calc_age,interpolate_profile):
      
     # If array is empty, assign np.nan
     if array.size == 0:
-        profile = np.empty(He_profile_nodes)
+        profile = np.empty(He_profile_nodes,dtype=dtype)
         profile.fill(np.nan)
 
     # Otherwise, assign new value from old profile
@@ -291,7 +289,7 @@ def particle_He_profile(particle,inputs,calc_age,interpolate_profile):
        
     # If particle not found, don't attempt to calculate profile or age
     if particle_temp.size == 0:            
-        x = np.empty(He_profile_nodes)
+        x = np.empty(He_profile_nodes,dtype=dtype)
         x.fill(np.nan)
         age = np.nan
         output = (age,x)
@@ -306,13 +304,6 @@ def particle_He_profile(particle,inputs,calc_age,interpolate_profile):
             # Get particle position
             particle_position = positions[ids==particle]
             
-            # Get particle ids of particles with profiles
-            # hasprofile = ~np.isnan(old_profiles).all(axis=1)
-            # other_particles = old_ids[hasprofile]
-            
-            # Get positions of other particles
-            # other_positions = old_positions[hasprofile]
-            
             # Find closest particle
             distance,index = tree.query(particle_position)
             
@@ -324,7 +315,7 @@ def particle_He_profile(particle,inputs,calc_age,interpolate_profile):
         
         # If turned off, return original profile of np.nan
         elif interpolate_profile==False:
-            x = np.empty(He_profile_nodes)
+            x = np.empty(He_profile_nodes,dtype=dtype)
             x.fill(np.nan)
             age = np.nan
             output = (age,x)

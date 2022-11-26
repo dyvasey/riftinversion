@@ -30,7 +30,7 @@ def tridiag(a, b, c, diag_length):
     tridiag_matrix : NumPy array
         Tridiagonal matri
 
-    """
+    """    
     a_array = np.ones(diag_length-1)*a
     b_array = np.ones(diag_length)*b
     c_array = np.ones(diag_length-1)*c
@@ -63,9 +63,11 @@ def tridiag_banded(a, b, c, diag_length):
         Tridiagonal matri
 
     """
-    a_array = np.ones(diag_length)*a
-    b_array = np.ones(diag_length)*b
-    c_array = np.ones(diag_length)*c
+    dtype=np.float32
+    
+    a_array = np.ones(diag_length,dtype=dtype)*a
+    b_array = np.ones(diag_length,dtype=dtype)*b
+    c_array = np.ones(diag_length,dtype=dtype)*c
     
     banded_matrix = np.vstack((a_array,b_array,c_array))
     banded_matrix[0,0] = 0

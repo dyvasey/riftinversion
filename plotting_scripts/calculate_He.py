@@ -1,0 +1,124 @@
+"""
+Script to forward model AHe for production models in Geology Manuscript
+"""
+import os
+import shutil
+
+import numpy as np
+import pyvista as pv
+
+from riftinversion import vtk_plot as vp
+
+# Compile all directory locations
+models_slow = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
+          '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b']
+
+models_fast = ['080122_rip_a','080122_rip_e','080122_rip_b','080122_rip_f',
+          '080122_rip_c','080122_rip_g','080122_rip_d','080122_rip_h']
+
+all_models = models_slow + models_fast
+
+# Names for output files
+
+names = ['M01-slow_cold_half','M02-slow_cold_half_qui', 'M03-slow_cold_full',
+         'M04-slow_cold_full_qui','M05-hot_fast_half','M06-hot_fast_half_qui',
+         'M07-hot_fast_full','M08-hot_fast_full_qui',
+         'M09-slow_cold_half_fastinvert','M10-slow_cold_half_qui_fastinvert',
+         'M11-slow_cold_full_fastinvert','M12-slow_cold_full_qui_fastinvert',
+         'M13-hot_fast_half_fastinvert','M14-hot_fast_half_qui_fastinvert',
+         'M15-hot_fast_full_fastinvert','M16-hot_fast_full_qui_fastinvert']
+
+model_step = 0.1
+
+tchron_interval = 0.1
+tchron_yrs = tchron_interval*1e6
+
+bounds=[325,675,580,620,0,0]
+
+# Rift times post-cooling for both slow and fast sets
+rift_times = [16,36,32,52,7.3,27.3,14.5,34.5]
+rift_times_all = [16,36,32,52,7.3,27.3,14.5,34.5]*2
+
+invert_times_slow = [x+20 for x in rift_times]
+invert_times_fast = [x+4 for x in rift_times]
+
+# Manual input of models that didn't fully finish
+invert_times_fast[0] = 19.4
+invert_times_fast[1] = 39.5
+
+invert_times_all = invert_times_slow + invert_times_fast
+
+# Directory for new meshes
+output_prefix = 'He_meshes/'
+
+overwrite = True
+processes=1
+
+if overwrite==True:
+    try:
+        shutil.rmtree(output_prefix)
+    except:
+        print("Creating new base directory...")
+    else:
+        print("Cleared existing base directory...")
+
+# Loop through each model
+for x,model in enumerate(all_models):  
+    
+    print('Processing ' + model + '...')
+    
+    # Get model files
+    base_dir = r'/mnt/f44f06b4-89ef-4d7c-a41d-6dbf331c8d4e/riftinversion_production/'
+    suffix = r'/output_ri_rift/particles'
+    
+    directory = base_dir + model + suffix
+    time_total = invert_times_all[x]  
+    
+    nsteps = int(time_total/model_step)
+    rift_step = int(rift_times_all[x]/model_step)
+    
+    timesteps = np.arange(rift_step,nsteps+1,int(tchron_interval/model_step))
+    
+    # Clip and store meshes
+    output_dir = output_prefix + model
+    os.makedirs(output_dir,exist_ok=True)
+    filename = output_dir + '/clipped_meshes.vtm'
+    
+    if overwrite==False:
+        try:
+            meshes = pv.read(filename)
+        except:
+            print('No Existing Clipped Meshes...')
+            print('Creating New Clipped Meshes...')
+            meshes = vp.load_particle_meshes(directory,timesteps,
+                                             bounds=bounds,filename=filename,
+                                             parallel=True,processes=processes)
+        else:
+            print('Processing Existing Clipped Meshes...')
+    
+    else:
+        print('Creating New Clipped Meshes...')
+        meshes = vp.load_particle_meshes(directory,timesteps,
+                                         bounds=bounds,filename=filename,
+                                         parallel=True,processes=processes)
+    
+    # Calculate AHe
+    filename_He = output_dir + '/meshes_AHe.vtm'
+    
+    if overwrite==False:
+        try:
+            AHe_meshes = pv.read(filename_He)
+        except:
+            print('No Existing AHe Meshes...')
+            print('Writing AHe Meshes...')
+            AHe_meshes = vp.He_age_vtk_parallel(meshes,'AHe',tchron_yrs,batch_size='auto',
+                                                 processes=processes,filename=filename_He)
+        else:
+            print('Skipping AHe Calculation...')
+    
+    else:
+        print('Writing AHe Meshes...')
+        AHe_meshes = vp.He_age_vtk_parallel(meshes,'AHe',tchron_yrs,batch_size='auto',
+                                             processes=processes,filename=filename_He)
+
+
