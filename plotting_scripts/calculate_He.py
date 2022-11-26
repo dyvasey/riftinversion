@@ -82,45 +82,51 @@ for x,model in enumerate(all_models):
     timesteps = np.arange(rift_step,nsteps+1,int(tchron_interval/model_step))
     
     # Clip and store meshes
+    folder_meshes = 'clipped_meshes'
     output_dir = output_prefix + model
     os.makedirs(output_dir,exist_ok=True)
-    filename = output_dir + '/clipped_meshes.vtm'
+    filename = os.path.join(output_dir,folder_meshes+'.vtm')
     
     if overwrite==False:
-        try:
-            meshes = pv.read(filename)
-        except:
+        if os.path.exists(filename):
+            print('Processing Existing Clipped Meshes...')
+        else:
             print('No Existing Clipped Meshes...')
             print('Creating New Clipped Meshes...')
-            meshes = vp.load_particle_meshes(directory,timesteps,
+            vp.load_particle_meshes(directory,timesteps,
                                              bounds=bounds,filename=filename,
                                              parallel=True,processes=processes)
-        else:
-            print('Processing Existing Clipped Meshes...')
     
-    else:
+    elif overwrite==True:
         print('Creating New Clipped Meshes...')
-        meshes = vp.load_particle_meshes(directory,timesteps,
+        vp.load_particle_meshes(directory,timesteps,
                                          bounds=bounds,filename=filename,
                                          parallel=True,processes=processes)
     
     # Calculate AHe
-    filename_He = output_dir + '/meshes_AHe.vtm'
+    folder_He = os.path.join(output_dir,'meshes_He')
+    os.makedirs(folder_He,exist_ok=True)
+    
+    mesh_dir = os.path.join(output_dir,folder_meshes)
+    mesh_files = os.listdir(mesh_dir)
+    ints = np.arange(0,len(mesh_files),1)
+    files = [os.path.join(mesh_dir,folder_meshes +'_'+str(integer)+'.vtu') for integer in ints]
     
     if overwrite==False:
-        try:
-            AHe_meshes = pv.read(filename_He)
-        except:
+        if len(os.listdir(folder_He))==len(files):
+            print('Skipping AHe Calculation...')
+       
+        else:
             print('No Existing AHe Meshes...')
             print('Writing AHe Meshes...')
-            AHe_meshes = vp.He_age_vtk_parallel(meshes,'AHe',tchron_yrs,batch_size='auto',
-                                                 processes=processes,filename=filename_He)
-        else:
-            print('Skipping AHe Calculation...')
-    
-    else:
+            vp.He_age_vtk_parallel(files,'AHe',tchron_yrs,batch_size='auto',
+                                                 processes=processes,
+                                                 path=output_dir)
+            
+    elif overwrite==True:
         print('Writing AHe Meshes...')
-        AHe_meshes = vp.He_age_vtk_parallel(meshes,'AHe',tchron_yrs,batch_size='auto',
-                                             processes=processes,filename=filename_He)
+        vp.He_age_vtk_parallel(files,'AHe',tchron_yrs,batch_size='auto',
+                                             processes=processes,
+                                             path=output_dir)
 
 

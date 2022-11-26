@@ -3,6 +3,7 @@ Test for forward modeling of ASPECT output, using cookbook output
 """
 
 #%% Import and setup files
+import os
 import tracemalloc
 import linecache
 
@@ -16,7 +17,10 @@ import pyvista as pv
 import vtk_plot as vp
 
 # Read in sample data from continental extension cookbook
-meshes = pv.read('../../sample_data/vtk_tchron_test.vtm')
+files_dir = '../../sample_data/vtk_tchron_test/'
+files_all = os.listdir(files_dir)
+ints = np.arange(0,len(files_all),1)
+files = [os.path.join(files_dir,'vtk_tchron_test_'+str(integer)+'.vtu') for integer in ints]
 
 #%% Set up tracemalloc
 def display_top(snapshot, key_type='lineno', limit=10):
@@ -45,10 +49,10 @@ def display_top(snapshot, key_type='lineno', limit=10):
 #%% Add He ages to final mesh and save
 tracemalloc.start()
 
-He_mesh = vp.He_age_vtk_parallel(meshes,'AHe',1e5,batch_size=100,
-                                 interpolate_profile=False,filename='meshes_He.vtm')
-He_mesh_interp = vp.He_age_vtk_parallel(meshes,'AHe',1e5,batch_size=100,
-                                        interpolate_profile=True,filename='meshes_He_interp.vtm')
+He_mesh = vp.He_age_vtk_parallel(files,'AHe',1e5,batch_size=100,
+                                 interpolate_profile=False,file_prefix='meshes_He')
+He_mesh_interp = vp.He_age_vtk_parallel(files,'AHe',1e5,batch_size=100,
+                                        interpolate_profile=True,file_prefix='meshes_He_interp')
 
 print(tracemalloc.get_traced_memory())
 
@@ -66,8 +70,6 @@ vp.plot2D('meshes_He/meshes_He_20.vtu','AHe',bounds=[0,200,90,100],cmap='plasma_
 
 vp.plot2D('meshes_He_interp/meshes_He_interp_20.vtu','AHe',bounds=[0,200,90,100],cmap='plasma_r',ax=axs[1],
           clim=[0,2])
-
-ages = He_mesh[-1].point_data['AHe']
 
 cbar = vp.add_colorbar(fig,0,2,'plasma_r',label='AHe Age',ticks=[0,1,2])
 

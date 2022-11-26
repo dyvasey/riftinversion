@@ -174,7 +174,8 @@ def comp_field_vtk(mesh,fields=['crust_upper','crust_lower','mantle_lithosphere'
     mesh.point_data['comp_field'] = output
     return(mesh)
 
-def He_age_vtk_parallel(meshes,system,time_interval,filename='meshes_He.vtm',
+def He_age_vtk_parallel(files,system,time_interval,file_prefix='meshes_He',
+               path='./',
                U=100,Th=100,radius=50,batch_size=100,processes=os.cpu_count()-2,
                He_profile_nodes=513,interpolate_profile=True,all_timesteps=True):
     """
@@ -192,8 +193,12 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='meshes_He.vtm',
     print('Batch Size: ',batch_size)
     print('Pre-Dispatch: ',pre_dispatch)
     
+    new_dir = os.path.join(path,file_prefix)
+    os.makedirs(new_dir,exist_ok=True)
+    
     # Loop through timesteps
-    for k,mesh in enumerate(meshes):
+    for k,file in enumerate(files):  
+        mesh = pv.read(file)
         
         temps = mesh['T']
         
@@ -235,14 +240,13 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='meshes_He.vtm',
         # Calculate ages on last timestep only if indicated
         if all_timesteps==True:
             calc_age=True
-        elif k==len(meshes)-1:
+        elif k==len(files)-1:
             calc_age=True
         else:
             calc_age=False
         
         print('Caluclating Profiles for Timestep ',k,'...')
 
-        
         output = (
             Parallel(n_jobs=processes,batch_size=batch_size,pre_dispatch=pre_dispatch)
             (delayed(particle_He_profile)
@@ -250,16 +254,17 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='meshes_He.vtm',
             )
         
         ages,new_profiles = zip(*output)
-        #ages = [pair[0]for pair in output]
-        #new_profiles = np.array([pair[1]for pair in output])
     
         # Assign ages to mesh
-        meshes[k].point_data[system] = np.array(ages,dtype=dtype)
+        mesh.point_data[system] = np.array(ages,dtype=dtype)
     
-    # Save modified multiblock
-    meshes.save(filename)
+        # Save new mesh
+        filename = file_prefix+'_'+str(k)+'.vtu'
+        filepath = os.path.join(new_dir,filename)
+        
+        mesh.save(filepath)
     
-    return(meshes)
+    return
 
 def particle_He_profile(particle,inputs,calc_age,interpolate_profile):
     
