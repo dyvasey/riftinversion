@@ -9,6 +9,8 @@ import pyvista as pv
 
 from riftinversion import vtk_plot as vp
 
+os.environ['JOBLIB_TEMP_FOLDER'] = '/dev/shm'
+
 # Compile all directory locations
 models_slow = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
           '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b']
@@ -51,8 +53,8 @@ invert_times_all = invert_times_slow + invert_times_fast
 # Directory for new meshes
 output_prefix = 'He_meshes/'
 
-overwrite = True
-processes=1
+overwrite = False
+processes=4
 
 if overwrite==True:
     try:

@@ -180,9 +180,7 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='meshes_He.vtm',
     """
     Function to do parallel He forward modeling of ASPECT VTK data.
     """
-    
-    # Extract ids, temps, and positions for each mesh
-    all_ids,all_temps,all_positions = extract_temps_positions(meshes)
+    dtype=np.float32
     
     print('Calculating He Ages...')
     if batch_size == 'auto':
@@ -195,21 +193,24 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='meshes_He.vtm',
     print('Pre-Dispatch: ',pre_dispatch)
     
     # Loop through timesteps
-    for k,temps in enumerate(all_temps):
-        positions = all_positions[k]
-        ids = all_ids[k]
+    for k,mesh in enumerate(meshes):
         
-        if k>0:  
-            old_profiles=new_profiles
-            old_ids = all_ids[k-1] # Get ids for previous profiles
-            old_positions = all_positions[k-1]
-        else:
+        temps = mesh['T']
+        
+        if k==0:
             # Set up empty arrays for first timestep
-            old_profiles = np.empty((len(ids),He_profile_nodes))
+            old_profiles = np.empty((len(temps),He_profile_nodes),dtype=dtype)
             old_profiles.fill(np.nan)
-            old_ids = np.ones(len(ids))*np.nan
-            old_positions = np.ones(len(ids))*np.nan
+            old_ids = np.ones(len(temps),dtype=dtype)*np.nan
+            old_positions = np.ones(len(temps),dtype=dtype)*np.nan
+        elif k>0:  
+            old_profiles=np.array(new_profiles,dtype=dtype)
+            old_ids = ids # Get ids for previous profiles
+            old_positions = positions
         
+        ids = mesh['id']
+        positions = mesh.points
+    
         # Set up KDTree for timestep if doing interpolation
         if (k>0)&(interpolate_profile==True):
             
@@ -234,7 +235,7 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='meshes_He.vtm',
         # Calculate ages on last timestep only if indicated
         if all_timesteps==True:
             calc_age=True
-        elif k==len(all_temps)-1:
+        elif k==len(meshes)-1:
             calc_age=True
         else:
             calc_age=False
@@ -248,11 +249,12 @@ def He_age_vtk_parallel(meshes,system,time_interval,filename='meshes_He.vtm',
              (particle,inputs,calc_age,interpolate_profile) for particle in tqdm(ids,position=0))
             )
         
-        ages = [pair[0]for pair in output]
-        new_profiles = np.array([pair[1]for pair in output])
+        ages,new_profiles = zip(*output)
+        #ages = [pair[0]for pair in output]
+        #new_profiles = np.array([pair[1]for pair in output])
     
         # Assign ages to mesh
-        meshes[k].point_data[system] = ages
+        meshes[k].point_data[system] = np.array(ages,dtype=dtype)
     
     # Save modified multiblock
     meshes.save(filename)
