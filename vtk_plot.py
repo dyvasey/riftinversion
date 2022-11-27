@@ -2,13 +2,15 @@
 Functions for plotting data from VTU/PVTU files.
 """
 import os
+import gc
+import shutil
 
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
 from tqdm import tqdm
-from joblib import Parallel,delayed
+from joblib import Parallel,delayed,dump,load
 from scipy.spatial import KDTree
 from matplotlib import cm,colors
 
@@ -175,7 +177,7 @@ def comp_field_vtk(mesh,fields=['crust_upper','crust_lower','mantle_lithosphere'
     return(mesh)
 
 def He_age_vtk_parallel(files,system,time_interval,file_prefix='meshes_He',
-               path='./',
+               path='./',temp='~/dump',
                U=100,Th=100,radius=50,batch_size=100,processes=os.cpu_count()-2,
                He_profile_nodes=513,interpolate_profile=True,all_timesteps=True):
     """
@@ -193,76 +195,124 @@ def He_age_vtk_parallel(files,system,time_interval,file_prefix='meshes_He',
     print('Batch Size: ',batch_size)
     print('Pre-Dispatch: ',pre_dispatch)
     
+    # Path for temporary memory dumps
+    temp = os.path.expanduser(temp)
+    
+    try:
+        shutil.rmtree(temp)
+    except:
+        pass
+    
+    os.makedirs(temp)
+    
     new_dir = os.path.join(path,file_prefix)
     os.makedirs(new_dir,exist_ok=True)
     
-    # Loop through timesteps
-    for k,file in enumerate(files):  
-        mesh = pv.read(file)
-        
-        temps = mesh['T']
-        
-        if k==0:
-            # Set up empty arrays for first timestep
-            old_profiles = np.empty((len(temps),He_profile_nodes),dtype=dtype)
-            old_profiles.fill(np.nan)
-            old_ids = np.ones(len(temps),dtype=dtype)*np.nan
-            old_positions = np.ones(len(temps),dtype=dtype)*np.nan
-        elif k>0:  
-            old_profiles=np.array(new_profiles,dtype=dtype)
-            old_ids = ids # Get ids for previous profiles
-            old_positions = positions
-        
-        ids = mesh['id']
-        positions = mesh.points
+    # Path for dump of cached profile
+    cache_path = os.path.join(new_dir,'cache_profile.npy')
     
-        # Set up KDTree for timestep if doing interpolation
-        if (k>0)&(interpolate_profile==True):
-            
-            # Get particle ids of particles with profiles
-            hasprofile = ~np.isnan(old_profiles).all(axis=1)
-            other_particles = old_ids[hasprofile]
-            
-            # Get positions of other particles
-            other_positions = old_positions[hasprofile]
-            
-            # Set up KDTree to find closest particle
-            tree = KDTree(other_positions)
-            
-        else:
-            tree=None
-            other_particles=None
-            
-        inputs = (k,positions,tree,ids,old_ids,temps,old_profiles,
-                  U,Th,radius,time_interval,other_particles,
-                  system,He_profile_nodes)
-            
-        # Calculate ages on last timestep only if indicated
-        if all_timesteps==True:
-            calc_age=True
-        elif k==len(files)-1:
-            calc_age=True
-        else:
-            calc_age=False
-        
-        print('Caluclating Profiles for Timestep ',k,'...')
-
-        output = (
-            Parallel(n_jobs=processes,batch_size=batch_size,pre_dispatch=pre_dispatch)
-            (delayed(particle_He_profile)
-             (particle,inputs,calc_age,interpolate_profile) for particle in tqdm(ids,position=0))
-            )
-        
-        ages,new_profiles = zip(*output)
+    with Parallel(n_jobs=processes,
+                  batch_size=batch_size,
+                  pre_dispatch=pre_dispatch,
+                  temp_folder=temp) as parallel:
     
-        # Assign ages to mesh
-        mesh.point_data[system] = np.array(ages,dtype=dtype)
-    
-        # Save new mesh
-        filename = file_prefix+'_'+str(k)+'.vtu'
-        filepath = os.path.join(new_dir,filename)
+        # Loop through timesteps
+        for k,file in enumerate(files):  
+            
+            filename = file_prefix+'_'+str(k)+'.vtu'
+            filepath = os.path.join(new_dir,filename)
+            
+            # Check if timestep already exists
+            if os.path.exists(filepath):
+                print('Timestep ' + str(k) + ' Previously Run')
+                
+                next_filename = file_prefix+'_'+str(k+1)+'.vtu'
+                next_filepath = os.path.join(new_dir,next_filename)
+                
+                # Check if this is the last file to exist
+                if ~os.path.exists(next_filepath):
+                    old_mesh = pv.read(filepath)
+                    ids = old_mesh['id']
+                    positions = old_mesh.points
+                    new_profiles = np.load(cache_path)
+                continue
+                   
+            mesh = pv.read(file)
+            
+            temps = mesh['T']
+            
+            if k==0:
+                # Set up empty arrays for first timestep
+                prof_shape = (len(temps),He_profile_nodes)
+                old_profiles = np.empty(prof_shape,dtype=dtype)
+                old_profiles.fill(np.nan)
+                old_ids = np.ones(len(temps),dtype=dtype)*np.nan
+                old_positions = np.ones(len(temps),dtype=dtype)*np.nan
+            elif k>0:  
+                old_profiles=new_profiles
+                old_ids = ids # Get ids for previous profiles
+                old_positions = positions
+            
+            gc.collect()
+            if k in np.arange(5,len(files),5):
+                shutil.rmtree(temp)
+                os.makedirs(temp)
+            
+            ids = mesh['id']
+            positions = mesh.points
         
-        mesh.save(filepath)
+            # Set up KDTree for timestep if doing interpolation
+            if (k>0)&(interpolate_profile==True):
+                
+                # Get particle ids of particles with profiles
+                hasprofile = ~np.isnan(old_profiles).all(axis=1)
+                other_particles = old_ids[hasprofile]
+                
+                # Get positions of other particles
+                other_positions = old_positions[hasprofile]
+                
+                # Set up KDTree to find closest particle
+                tree = KDTree(other_positions)
+                
+            else:
+                tree=None
+                other_particles=None
+                
+            inputs = (k,positions,tree,ids,old_ids,temps,old_profiles,
+                      U,Th,radius,time_interval,other_particles,
+                      system,He_profile_nodes)
+                
+            # Calculate ages on last timestep only if indicated
+            if all_timesteps==True:
+                calc_age=True
+            elif k==len(files)-1:
+                calc_age=True
+            else:
+                calc_age=False
+            
+            print('Caluclating Profiles for Timestep ',k,'...')
+            
+    
+            output = parallel(
+                (delayed(particle_He_profile)
+                 (particle,inputs,calc_age,interpolate_profile) 
+                 for particle in tqdm(ids,position=0))
+                )
+            
+            ages,new_profiles = zip(*output)
+        
+            # Convert new_profiles to array and save for reload
+            new_profiles = np.array(new_profiles,dtype=dtype)
+            np.save(cache_path,new_profiles)
+        
+            # Assign ages to mesh
+            mesh.point_data[system] = np.array(ages,dtype=dtype)
+        
+            # Save new mesh
+            mesh.save(filepath)
+    
+    # Delete cached profile when all finished
+    os.remove(cache_path)
     
     return
 

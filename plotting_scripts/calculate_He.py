@@ -4,13 +4,39 @@ Script to forward model AHe for production models in Geology Manuscript
 import os
 import shutil
 
+import tracemalloc
+import linecache
+
 import numpy as np
 import pyvista as pv
 
 from riftinversion import vtk_plot as vp
 
-os.environ['JOBLIB_TEMP_FOLDER'] = '/dev/shm'
+#%% Set up tracemalloc
+def display_top(snapshot, key_type='lineno', limit=10):
+    snapshot = snapshot.filter_traces((
+        tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
+        tracemalloc.Filter(False, "<unknown>"),
+    ))
+    top_stats = snapshot.statistics(key_type)
 
+    print("Top %s lines" % limit)
+    for index, stat in enumerate(top_stats[:limit], 1):
+        frame = stat.traceback[0]
+        print("#%s: %s:%s: %.1f KiB"
+              % (index, frame.filename, frame.lineno, stat.size / 1024))
+        line = linecache.getline(frame.filename, frame.lineno).strip()
+        if line:
+            print('    %s' % line)
+
+    other = top_stats[limit:]
+    if other:
+        size = sum(stat.size for stat in other)
+        print("%s other: %.1f KiB" % (len(other), size / 1024))
+    total = sum(stat.size for stat in top_stats)
+    print("Total allocated size: %.1f KiB" % (total / 1024))
+
+#%%
 # Compile all directory locations
 models_slow = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
           '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b']
@@ -112,6 +138,8 @@ for x,model in enumerate(all_models):
     ints = np.arange(0,len(mesh_files),1)
     files = [os.path.join(mesh_dir,folder_meshes +'_'+str(integer)+'.vtu') for integer in ints]
     
+    tracemalloc.start()
+    
     if overwrite==False:
         if len(os.listdir(folder_He))==len(files):
             print('Skipping AHe Calculation...')
@@ -119,14 +147,23 @@ for x,model in enumerate(all_models):
         else:
             print('No Existing AHe Meshes...')
             print('Writing AHe Meshes...')
-            vp.He_age_vtk_parallel(files,'AHe',tchron_yrs,batch_size='auto',
-                                                 processes=processes,
-                                                 path=output_dir)
+            try:
+                vp.He_age_vtk_parallel(files,'AHe',tchron_yrs,batch_size='auto',
+                                                     processes=processes,
+                                                     path=output_dir)
+            except:
+                snapshot = tracemalloc.take_snapshot()
+                display_top(snapshot)
+                tracemalloc.stop()
+                raise
             
     elif overwrite==True:
         print('Writing AHe Meshes...')
         vp.He_age_vtk_parallel(files,'AHe',tchron_yrs,batch_size='auto',
-                                             processes=processes,
-                                             path=output_dir)
+                                                 processes=processes,
+                                                 path=output_dir)
+
+
+
 
 

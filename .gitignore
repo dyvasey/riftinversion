@@ -12,6 +12,7 @@ composition.txt
 *.vtu
 *.vtm
 *.mp4
+*.npy
 !ri_base*
 !run_base*
 
