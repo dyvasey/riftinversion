@@ -36,7 +36,7 @@ tstep_interval = 0.1
 # Set up the figures
 
 fig,axs = plt.subplots(4,2,dpi=300,figsize=(7,9.5))
-bounds = [350,650,575,620]
+bounds = [325,675,575,620]
 
 fig2,axs2 = plt.subplots(4,2,dpi=300,figsize=(7,9.5))
 
@@ -57,11 +57,11 @@ for k,model in enumerate(models):
     
     # Get the appropriate vtu file
     base_dir = r'/home/dyvasey/git/riftinversion/plotting_scripts/He_meshes/'
-    suffix = r'/meshes_AHe'
+    suffix = r'/meshes_He'
     vtu_dir = base_dir + model + suffix
     
     # Get last mesh
-    file = os.path.join(vtu_dir,'meshes_AHe_39.vtu')
+    file = os.path.join(vtu_dir,'meshes_He_199.vtu')
     
     mesh = pv.read(file)
     print(mesh['AHe'].max(),mesh['AHe'].min())

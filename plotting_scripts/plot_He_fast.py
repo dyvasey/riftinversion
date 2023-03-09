@@ -57,12 +57,12 @@ for k,model in enumerate(models):
     
     # Get the appropriate vtu file
     base_dir = r'/home/dyvasey/git/riftinversion/plotting_scripts/He_meshes/'
-    suffix = r'/meshes_AHe'
+    suffix = r'/meshes_He'
     vtu_dir = base_dir + model + suffix
     
     # Get last mesh
     files = os.listdir(vtu_dir)
-    file = os.path.join(vtu_dir,'meshes_AHe_6.vtu')
+    file = os.path.join(vtu_dir,'meshes_He_33.vtu')
     print(file)
     
     mesh = pv.read(file)
