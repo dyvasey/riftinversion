@@ -165,12 +165,17 @@ cness_norm = cness_zeroed/cness_zeroed.max()
 
 local_zeroed = final['Localization']-final['Localization'].min()
 local_norm = local_zeroed/local_zeroed.max()
-bness = 1-local_norm
 
 symm_zeroed = final['Symmetry']-final['Symmetry'].min()
 symm_norm = symm_zeroed/symm_zeroed.max()
-aness = 1-symm_norm
+
+aness_norm = 1-symm_norm
+
+bness = (1-local_norm)*symm_norm**3
+bness_norm = bness/bness.max()
 
 for k,row in final.iterrows():
-    ax.scatter(cness_norm[k],aness[k],bness[k],label=k)
+    ax.scatter(cness_norm[k],aness_norm[k],bness_norm[k],label=k)
     ax.legend()
+    
+fig.savefig('ternary.pdf')
