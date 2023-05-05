@@ -37,13 +37,13 @@ tstep_interval = 0.1
 fig,axs = plt.subplots(4,2,dpi=300,figsize=(7,9.5))
 bounds = [300,700,400,620]
 
-colors=['#99CCCC','#996633','#990000','#339966']
+colors=['#66CCEE','#BBBBBB','#EE6677','#228833']
 cm = ListedColormap(colors)
 
 # Set opacity for strain
-opacity_strain = [0,0.7,0.7,0.7,0.7]
+opacity_strain = [0,0.8,0.8,0.8,0.8]
 lim_strain = [0,5]
-cm_strain = 'inferno'
+cm_strain = 'inferno_r'
 
 # Do the loop to plot
 
@@ -90,7 +90,7 @@ orig_cmap = plt.get_cmap(cm_strain)
 orig_colors = orig_cmap(np.arange(orig_cmap.N))
 cutoff= int(orig_cmap.N/5)
 
-alpha = np.concatenate((np.linspace(0,0.7,cutoff), np.ones(orig_cmap.N-cutoff)*0.7))
+alpha = np.concatenate((np.linspace(0,0.8,cutoff), np.ones(orig_cmap.N-cutoff)*0.8))
 
 orig_colors[:,-1] = alpha
 
@@ -104,7 +104,7 @@ cax.tick_params(axis='both',labelsize=6)
 cax.set_title('Plastic Strain',fontsize=6,pad=1)  
 cax.set_xticks([0,5])
 
-colors_barorder = ['#99CCCC','#339966','#990000','#996633']
+colors_barorder = [colors[0],colors[3],colors[2],colors[1]]
 cm_bar = ListedColormap(colors_barorder)
 
 cax2 = vp.add_colorbar(fig,cmap=cm_bar,
@@ -118,8 +118,9 @@ cax2.set_yticklabels(['Asthenosphere','Mantle Lithosphere','Lower Crust','Upper 
 plt.subplots_adjust(bottom=0.1)
     
 fig.savefig('all_final_fast.pdf')
+fig.savefig('all_final_fast.jpg')
 
-project_dir = '/home/dyvasey/hawksey/UCD Box/UC Davis/Manuscripts/RiftInversion_Geology/python_figs/all_final_fast.pdf'
+project_dir = '/home/dyvasey/hawksey/UCD Box/UC Davis/Manuscripts/RiftInversion_Geology/python_figs/all_final_fast.jpg'
 fig.savefig(project_dir)   
     
 

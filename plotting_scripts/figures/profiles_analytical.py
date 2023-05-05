@@ -80,7 +80,7 @@ fig,axs = plt.subplots(2,3,dpi=300,figsize=(7,5))
 
 axs = axs.flat
 
-colors=['#99CCCC','#996633','#990000','#339966']
+colors=['#66CCEE','#BBBBBB','#EE6677','#228833']
 cm = LinearSegmentedColormap.from_list('fields',colors)
 
 vp.plot2D(file,'comp_field',[0,1000,0,600],ax=axs[0],cmap=cm)
@@ -124,7 +124,7 @@ axs[5].set_title('Geothermal Gradient')
 for ax in axs:
     ax.tick_params(labelsize=6)
 
-colors_barorder = ['#99CCCC','#339966','#990000','#996633']
+colors_barorder = [colors[0],colors[3],colors[2],colors[1]]
 cm_bar = ListedColormap(colors_barorder)
 
 cax2 = vp.add_colorbar(fig,cmap=cm_bar,
@@ -139,5 +139,5 @@ plt.tight_layout()
 
 fig.savefig('initial_analytical.pdf')
 
-project_dir = '/home/dyvasey/hawksey/UCD Box/UC Davis/Manuscripts/RiftInversion_Geology/python_figs/initial_analytical.pdf'
+project_dir = '/home/dyvasey/hawksey/UCD Box/UC Davis/Manuscripts/RiftInversion_Geology/python_figs/initial_analytical.jpg'
 fig.savefig(project_dir)   

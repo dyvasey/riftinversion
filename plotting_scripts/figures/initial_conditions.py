@@ -43,20 +43,21 @@ tstep_interval = 0.1
 fig,axs = plt.subplots(2,2,dpi=300,figsize=(5,4))
 bounds = [300,700,400,620]
 
-colors=['#99CCCC','#996633','#990000','#339966']
+colors=['#66CCEE','#BBBBBB','#EE6677','#228833']
 cm = ListedColormap(colors)
 
 # Set opacity for strain
-opacity_strain = [0,0.7,0.7,0.7,0.7]
+opn = 0.8
+opacity_strain = [0,opn,opn,opn,opn]
 lim_strain = [0,5]
-cm_strain = 'inferno'
+cm_strain = 'inferno_r'
 
 # Set colormap for colorbar
 orig_cmap = plt.get_cmap(cm_strain)
 orig_colors = orig_cmap(np.arange(orig_cmap.N))
 cutoff= int(orig_cmap.N/5)
 
-alpha = np.concatenate((np.linspace(0,0.7,cutoff), np.ones(orig_cmap.N-cutoff)*0.7))
+alpha = np.concatenate((np.linspace(0,opn,cutoff), np.ones(orig_cmap.N-cutoff)*opn))
 
 orig_colors[:,-1] = alpha
 
@@ -92,7 +93,7 @@ for k,model in enumerate(models_stan):
               contours_only=True)
     
     vp.plot2D(file_cool,'comp_field',bounds=bounds,ax=ax,
-              cmap=cm,contours=True,contour_color='darkgray',
+              cmap=cm,contours=True,contour_color='white',
               contours_only=True)
     
     vp.plot2D(file_stan,'noninitial_plastic_strain',bounds=bounds,ax=ax,
@@ -114,7 +115,7 @@ cax.tick_params(axis='both',labelsize=6)
 cax.set_title('Plastic Strain',fontsize=6)  
 cax.set_xticks([0,5])
 
-colors_barorder = ['#99CCCC','#339966','#990000','#996633']
+colors_barorder = [colors[0],colors[3],colors[2],colors[1]]
 cm_bar = ListedColormap(colors_barorder)
 
 cax2 = vp.add_colorbar(fig,cmap=cm_bar,

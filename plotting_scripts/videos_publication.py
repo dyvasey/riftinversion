@@ -59,11 +59,11 @@ else:
 os.makedirs(output_dir,exist_ok=False)
 
 # Set up colormaps
-colors=['#99CCCC','#996633','#990000','#339966']
+colors=['#66CCEE','#BBBBBB','#EE6677','#228833']
 cm = ListedColormap(colors)
 
 # For legend colorbar
-colors_barorder = ['#99CCCC','#339966','#990000','#996633']
+colors_barorder = [colors[0],colors[3],colors[2],colors[1]]
 cm_bar = ListedColormap(colors_barorder)
 
 opaque_cm = 'inferno_r'
@@ -176,7 +176,7 @@ for x,model in enumerate(all_models):
         cax_comp.set_yticklabels(['Asthenosphere','Mantle Lithosphere',
                                   'Lower Crust','Upper Crust'])
     
-        plt.tight_layout()
+        #plt.tight_layout()
         fig.savefig(image_dir+time_str+'.jpg')
         
         fig.clear()

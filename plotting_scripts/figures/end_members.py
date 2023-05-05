@@ -27,7 +27,7 @@ import vtk_plot as vp
 models = ['063022_rip_c',
           '070422_rip_c','070422_rip_e']
 
-names = ['Model 1 - Style A','Model 5 - Style B','Model 3 - Style C']
+names = ['Model 1 - Style AU','Model 5 - Style DT','Model 3 - Style PF']
 
 # Indicate times for each model
 times_start = [16,7.3,32]
@@ -40,13 +40,14 @@ tstep_interval = 0.1
 fig,axs = plt.subplots(3,3,dpi=300,figsize=(7,5))
 bounds = [300,700,400,620]
 
-colors=['#99CCCC','#996633','#990000','#339966']
+colors=['#66CCEE','#BBBBBB','#EE6677','#228833']
 cm = ListedColormap(colors)
 
 # Set opacity for strain
-opacity_strain = [0,0.7,0.7,0.7,0.7]
+opacity_strain = [0,0.8,0.8,0.8,0.8]
 lim_strain = [0,5]
-cm_strain = 'inferno'
+cm_strain = 'inferno_r'
+
 
 # Do the loop to plot
 
