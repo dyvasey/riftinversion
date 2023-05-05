@@ -20,10 +20,11 @@ composition.txt
 !plotting_scripts/
 !plotting_scripts/figures/
 !prms_rheology/
+!manuscript_structuralstyle/model_files/**
 
 !tchron/
 !tchron/tests/
 
 !sample_data/vtk_tchron_test.vtm
 !sample_data/vtk_tchron_test/*.vtu
-!model_files/**
+
