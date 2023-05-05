@@ -139,5 +139,5 @@ plt.tight_layout()
 
 fig.savefig('initial_analytical.pdf')
 
-project_dir = '/home/dyvasey/hawksey/UCD Box/UC Davis/Manuscripts/RiftInversion_Geology/python_figs/initial_analytical.jpg'
+project_dir = '/home/dyvasey/hawksey/UCD Box/UC Davis/Manuscripts/RiftInversion_Geology/python_figs/initial_analytical.pdf'
 fig.savefig(project_dir)   

@@ -119,7 +119,7 @@ plt.subplots_adjust(bottom=0.1)
 fig.savefig('all_final_slow.pdf')
 fig.savefig('all_final_slow.jpg')
 
-project_dir = '/home/dyvasey/hawksey/UCD Box/UC Davis/Manuscripts/RiftInversion_Geology/python_figs/all_final_slow.jpg'
+project_dir = '/home/dyvasey/hawksey/UCD Box/UC Davis/Manuscripts/RiftInversion_Geology/python_figs/all_final_slow.pdf'
 fig.savefig(project_dir)    
     
 
