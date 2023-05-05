@@ -18,14 +18,13 @@ There are serveral Python modules (.py) that are designed to be imported and use
 These are `.py` files that use the modules above in support of ASPECT rift inversion models:
 
 * `geotherms.py`  - scripts to generate geothermal gradient values used by `ripropagate.py` to populate `.prm` files, using the [geoscripts](https://github.com/dyvasey/geoscripts]) package.
-* Scripts under `plotting_scripts/` - scripts used to create figures for publication, using raw output data stored on a local machine.
+* Scripts under `plotting_scripts/` - scripts used to process raw output data stored on a local machine.
+* Scripts under `manuscript_structuralstyle` - scripts used to generate figures and ASPECT input files used in manuscript on structural style in preparation for _Geology_.
 
 ### Jupyter Notebooks
 The `lab_notebooks_archived/` directory contains Jupyter notebooks logging model runs for this project. Note that to actually use these, the notebook needs to be moved to the main repository directory and the repository would need to be reverted to the commit from when the notebook cell was created.
 
 ### Base Parameter Files and Shell Scripts
 `.prm` files used as a base for model runs are included, with variable parameters indicated by `XXX`. These parameters are propagated using calls to `ripropagate.py` in the Jupyter Notebooks. `.sh` scripts used for model submission on the Stampede2 cluster are also included.
-
-A separate directory `model_files` contains the specific parameter and composition files used for the models presented in publications.
 
 
