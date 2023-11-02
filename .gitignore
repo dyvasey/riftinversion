@@ -21,6 +21,7 @@ composition.txt
 !plotting_scripts/figures/
 !prms_rheology/
 !manuscript_structuralstyle/model_files/**
+!manuscript_structuralstyle/supplemental_models/**
 
 !tchron/
 !tchron/tests/

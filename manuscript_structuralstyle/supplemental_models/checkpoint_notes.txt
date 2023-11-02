@@ -1,0 +1,5 @@
+Notes on checkpoints for supplemental models
+
+"globalrefinement" and "narrow strain" are new models and should start from scratch
+"extendedcooling" should start after the quiescence phase as preserved in model 063022_rip_b (included)
+"slow1" and "slow2" should start after the rifting phase as preserved in model 062822_rip_b (included)
