@@ -14,7 +14,7 @@ import pyvista as pv
 
 from tqdm import tqdm
 
-from riftinversion import vtk_plot as vp
+import vtk_plot as vp
 
 pv.start_xvfb()
 
