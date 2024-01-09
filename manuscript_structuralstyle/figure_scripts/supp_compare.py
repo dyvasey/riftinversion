@@ -92,7 +92,7 @@ for k,model in enumerate(models):
     vp.plot2D(file,'noninitial_plastic_strain',bounds=bounds,ax=ax,
               cmap=cm_strain,opacity=opacity_strain,clim=lim_strain)
     
-    ax.set_title(names[k] + ': '+ str(inv_times[k]) + ' Myr',fontsize=8)
+    ax.set_title(names[k] + ': '+ str(inv_times[k]-times[k]) + ' Myr',fontsize=8)
     ax.tick_params(axis='both',labelsize=6)
 
 axs[2,0].set_xlabel('X Position (km)',fontsize=6)
