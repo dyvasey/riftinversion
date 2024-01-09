@@ -1,5 +1,6 @@
 """
-Plotter for extended timestep figures for Geology manuscript
+Plotter for extended timestep figures for supplemental models for
+Geology manuscript
 """
 import os
 import shutil
@@ -13,45 +14,26 @@ from tqdm import tqdm
 
 from riftinversion import vtk_plot as vp
 
-# Compile all directory locations
-models_slow = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
-          '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b']
+# Get model paths
+base_dir = r'/mnt/f44f06b4-89ef-4d7c-a41d-6dbf331c8d4e/ri_production_supp/'
+suffix = r'/output_ri_rift/solution'
 
-models_fast = ['080122_rip_a','080122_rip_e','080122_rip_b','080122_rip_f',
-          '080122_rip_c','080122_rip_g','080122_rip_d','080122_rip_h']
+models = [folder for folder in os.listdir(base_dir) if folder.endswith("_inv")]
+models.sort()
 
-all_models = models_slow + models_fast
+# Rift times post-cooling
+rift_times = [16]*4 + [56]
 
-# Names for output files
-
-names = ['M01-slow_cold_half','M02-slow_cold_half_qui', 'M03-slow_cold_full',
-         'M04-slow_cold_full_qui','M05-hot_fast_half','M06-hot_fast_half_qui',
-         'M07-hot_fast_full','M08-hot_fast_full_qui',
-         'M09-slow_cold_half_fastinvert','M10-slow_cold_half_qui_fastinvert',
-         'M11-slow_cold_full_fastinvert','M12-slow_cold_full_qui_fastinvert',
-         'M13-hot_fast_half_fastinvert','M14-hot_fast_half_qui_fastinvert',
-         'M15-hot_fast_full_fastinvert','M16-hot_fast_full_qui_fastinvert']
-
-# Rift times post-cooling for both slow and fast sets
-rift_times = [16,36,32,52,7.3,27.3,14.5,34.5]
-rift_times_doubled = rift_times*2
-
-invert_times_slow = [x+20 for x in rift_times]
-invert_times_fast = [x+4 for x in rift_times]
-
-# Manual input of models that didn't fully finish
-invert_times_fast[0] = 19.4
-invert_times_fast[1] = 39.5
-
-invert_times_all = invert_times_slow + invert_times_fast
+# Final invert times
+invert_times= [36,36,56,116,76]
 
 model_step = 0.1
 image_dir = 'images/'
 
 # Set up directory for images
-output_dir = 'extended_timesteps/'
+output_dir = 'extended_timesteps_supp/'
 try:
-    shutil.rmtree('extended_timesteps')
+    shutil.rmtree(output_dir)
 except:
     print("Creating new directory...")
 else:
@@ -81,29 +63,31 @@ bar=False
 cbar_label = 8
 
 # Loop through each model
-for x,model in enumerate(all_models):  
+for x,model in enumerate(models):  
     
     # Get model files
-    base_dir = r'/mnt/f44f06b4-89ef-4d7c-a41d-6dbf331c8d4e/riftinversion_production/'
-    suffix = r'/output_ri_rift/solution'
-    
     directory = base_dir + model + suffix
-    time_total = invert_times_all[x]  
+    time_total = invert_times[x]  
     
     nsteps = int(time_total/model_step)
     
     # Get inversion timesteps in equal increments of strain
-    start = rift_times_doubled[x]
+    start = rift_times[x]
     start_step = int(start/model_step)
     
     end = time_total
+    inv_time = end-start
     
     scale_factor = 1
     
-    if (end-start)>10:
+    if inv_time==20:
         increment=5*scale_factor
+    elif inv_time==40:
+        increment=10*scale_factor
+    elif inv_time==100:
+        increment=25*scale_factor
     else:
-        increment=1*scale_factor
+        print('Invalid invert time')
     
     timesteps = np.arange(start_step,nsteps,increment)
     times = timesteps*model_step
@@ -133,7 +117,7 @@ for x,model in enumerate(all_models):
     sfig,ax = plt.subplots(1,dpi=300)
     ax.plot(times,max_srates)
     ax.set_ylim(1e-15,2e-13)
-    sfig.savefig(output_dir+names[x]+'_'+'max_sr'+'.jpg')
+    sfig.savefig(output_dir+models[x]+'_'+'max_sr'+'.jpg')
     
     for n in range(4):
         fig,axs = plt.subplots(8,5,dpi=300,figsize=(24,15))
@@ -164,7 +148,7 @@ for x,model in enumerate(all_models):
 
             
         plt.tight_layout()
-        fig.savefig(output_dir+names[x]+'_'+fields[n]+'.jpg')
+        fig.savefig(output_dir+models[x]+'_'+fields[n]+'.jpg')
         
         fig.clear()
         plt.close(fig)
