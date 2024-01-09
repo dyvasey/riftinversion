@@ -559,17 +559,17 @@ def get_pvtu(directory,timesteps,kind='solution'):
     # Set up directory building blocks
     main = directory
     if kind=='solution':
-        prefix = 'solution-00'
+        prefix = 'solution-'
     if kind == 'particles':
-        prefix = 'particles-00'
+        prefix = 'particles-'
     suffix = '.pvtu'
     
     # Get file paths for all timesteps
     if type(timesteps)==int:
-        timesteps_str = str(timesteps).zfill(3)
+        timesteps_str = str(timesteps).zfill(5)
         files = os.path.join(main,prefix+timesteps_str+suffix)
     else:
-        timesteps_str = [str(x).zfill(3) for x in timesteps.tolist()]
+        timesteps_str = [str(x).zfill(5) for x in timesteps.tolist()]
         files = [os.path.join(main,prefix+x+suffix) for x in timesteps_str]
     
 
