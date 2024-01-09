@@ -51,12 +51,7 @@ end
 subsection Mesh refinement
   set Initial global refinement          = 2
   set Initial adaptive refinement        = 0
-  set Time steps between mesh refinement = 1
-
-  # set Strategy = isosurfaces
-  # subsection Isosurfaces
-  #  set Isosurfaces = 2,2,  Temperature: 273|1585; 1,1, Temperature: 1585|1629
-  # end
+  set Time steps between mesh refinement = 0
 end
 
 # Q2Q1 Element
