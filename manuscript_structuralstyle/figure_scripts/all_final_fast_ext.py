@@ -139,7 +139,7 @@ fig1.savefig('all_final_fast_ext.jpg')
 #fig2.savefig('all_final_slow_ext2.pdf')
 #fig2.savefig('all_final_slow_ext2.jpg')
 
-project_dir1 ='/home/dyvasey/hawksey/tufts_box/internal_files/manuscripts/Vasey_RiftInversion_Geology/python_figs/all_final_fast_ext.pdf'
+project_dir1 ='/home/dyvasey/hawksey/tufts_box/internal_files/manuscripts/Vasey_RiftInversion_Geology/python_figs/all_final_fast_ext.jpg'
 fig1.savefig(project_dir1)    
 
 #project_dir2 ='/home/dyvasey/hawksey/tufts_box/internal_files/manuscripts/Vasey_RiftInversion_Geology/python_figs/all_final_slow_ext2.pdf'
