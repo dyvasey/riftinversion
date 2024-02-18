@@ -84,7 +84,7 @@ for k,model in enumerate(models):
         
         time_label = str((tsteps_invert[n]-tsteps_invert[0])/10)
         
-        ax.set_title(names[k] + ': '+ time_label + ' Myr',fontsize=6,
+        ax.set_title(names[k] + ': '+ time_label + ' m.y.',fontsize=6,
                      weight='bold')
         
         ax.set_xticks([300,700])
