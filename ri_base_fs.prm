@@ -81,7 +81,6 @@ end
 subsection Mesh deformation
   set Mesh deformation boundary indicators = top : fastscape
   set Additional tangential mesh velocity boundary indicators = left, right
-  #set Surface stabilization theta = 0.5
 
   subsection Fastscape
     set Vertical exaggeration = -1
@@ -92,10 +91,6 @@ subsection Mesh deformation
     set Additional fastscape refinement = 0
     set Use marine component = true
     set Use ghost nodes = true
-    #set Y extent in 2d = 50e3
-    #set Sediment rain = 0.00e-3, 0.00e-3, 0.0e-3  # m/yr
-    #set Sediment rain intervals = 10e6, 15e6
-    #set Use velocities = true
 
    subsection Boundary conditions
       set Back = 1
@@ -105,30 +100,24 @@ subsection Mesh deformation
    end
    
    subsection Erosional parameters
-     set Drainage area exponent = 0.4              #m
-     set Slope exponent = 1                        #n
+     set Drainage area exponent = 0.8              #m
+     set Slope exponent = 2                        #n
      set Multi-direction slope exponent = -1        #p
 
-     set Bedrock diffusivity = 5e-3           #kd
-     set Bedrock river incision rate = 1e-5        #kf
+     set Bedrock diffusivity = 1e-2         #kd
+     set Bedrock river incision rate = 0.5e-5        #kf
      set Bedrock deposition coefficient = 1        #G
 
      set Sediment diffusivity = -1
      set Sediment river incision rate = -1  
+     set Use a fixed erosional base level = true
+     set Erosional base level = -1000
    end
 
    subsection Marine parameters
-     set Sea level = -500
-     #set Sand porosity = 0
-     #set Shale porosity = 0
-     #set Sand e-folding depth = 0
-     #set Shale e-folding depth =  0
-     
-     
-     #set Sand-shale ratio = 1
-     set Depth averaging thickness = 1e2
-     #set Sand transport coefficient = 200
-     #set Shale transport coefficient = 200
+     set Sea level = -1500
+     set Sand transport coefficient = 500
+     set Silt transport coefficient = 250
    end
  end
  end
@@ -250,7 +239,7 @@ subsection Material model
   subsection Visco Plastic
 
     set Reference temperature = 273 # Not used!
-    set Reference viscosity   = 1e20
+    #set Reference viscosity   = 1e20
     set Minimum strain rate = 1.e-20
     set Reference strain rate = 1.e-15
     set Minimum viscosity = 1e19
