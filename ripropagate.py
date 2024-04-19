@@ -231,14 +231,15 @@ def generate(file='ri_base.prm',lthick=100,depth=600,evel=1,etime=50,soft=0.375,
         newfile.writelines(contents)
         newfile.close()
     
-    # Generate run.sh for Stampede2
+    # Generate run.sh
     spath = os.path.join('.',shell)
     with open(spath) as f_sh: # Open the file
         contents = f_sh.read() # Read file into string
         contents = contents.replace('$ASP XXX','$ASP '+newname)
         contents = contents.replace('log_XXX','log_ri_'+fullstring)
         contents = contents.replace('-N XXX','-N '+str(nodes))
-        contents = contents.replace('-n XXX','-n '+str(nodes*48))
+        contents = contents.replace('-n XXX','-n '+str(nodes*64))
+        contents = contents.replace('$ASPDIR/build/./aspect ./XXX','$ASPDIR/build/./aspect ./'+newname)
         contents = version(contents,ver)
         if 'XXX' in contents:
             print('WARNING: .sh generated contains XXX')

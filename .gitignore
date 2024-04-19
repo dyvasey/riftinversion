@@ -14,7 +14,7 @@ composition.txt
 *.mp4
 *.npy
 !ri_base*
-!run_base*
+!run_*
 
 !lab_notebooks_archived/
 !plotting_scripts/
