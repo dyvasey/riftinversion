@@ -335,3 +335,4 @@ end
 
 subsection Termination criteria
   set Checkpoint on termination = true
+end
