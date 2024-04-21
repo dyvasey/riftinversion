@@ -330,7 +330,7 @@ end
 
 # Checkpointing
 subsection Checkpointing
-  set Time between checkpoint = 7200
+  set Steps between checkpoint = 20
 end
 
 subsection Termination criteria
