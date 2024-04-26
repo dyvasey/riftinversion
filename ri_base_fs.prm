@@ -84,8 +84,8 @@ subsection Mesh deformation
 
   subsection Fastscape
     set Vertical exaggeration = -1
-    set Maximum timestep length = 1000
-    set Number of fastscape timesteps per aspect timestep = 10
+    set Maximum timestep length = 10
+    set Number of fastscape timesteps per aspect timestep = 200
     set Maximum surface refinement level = 2    # Matches surface resolution
     set Surface refinement difference = 0
     set Additional fastscape refinement = 0
