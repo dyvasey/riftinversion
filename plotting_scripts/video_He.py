@@ -28,8 +28,8 @@ nsteps = int(time/model_step)
 
 timesteps = np.arange(0,nsteps+1,1)
 
-files = [file for file in os.listdir(directory) if file.endswith('.vtu')]
-files.sort(key = lambda x: int(re.split('_ |. ', x)[-2]))
+files = [os.path.join(directory,file) for file in os.listdir(directory) if file.endswith('.vtu')]
+files.sort(key = lambda x: int(re.split('_|\.', x)[-2]))
 print(files)
 
 image_dir = 'images/'
@@ -43,7 +43,7 @@ else:
 
 os.makedirs(image_dir,exist_ok=False)
 
-cm='inferno'
+cm='viridis_r'
 clim = [0,float(time)]
 
 bar=True
@@ -55,9 +55,9 @@ for k,step in enumerate(tqdm(timesteps)):
     
     fig,axs = plt.subplots(1,dpi=300,figsize=(8.5,11))
 
-    axs[0].set_title(str(round(time,1)) +' Ma',loc='left')
+    axs.set_title(str(round(time,1)) +' Ma',loc='left')
     
-    vp.plot2D(files[k],'AHe',bounds=[250,750,450,620],ax=axs,
+    vp.plot2D(files[k],'AHe',bounds=[400,600,550,620],ax=axs,
               cmap=cm,colorbar=bar,clim=clim)
 
     plt.tight_layout()
