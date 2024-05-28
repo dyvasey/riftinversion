@@ -310,6 +310,13 @@ def He_age_vtk_parallel(files,system,time_interval,file_prefix='meshes_He',
         
             # Save new mesh
             mesh.save(filepath)
+            
+            # Purge the temp folder
+            try:
+                shutil.rmtree(temp)
+            except:
+                pass
+            os.makedirs(temp)
     
     # Delete cached profile when all finished
     os.remove(cache_path)
