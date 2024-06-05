@@ -69,12 +69,18 @@ end
 # Solver parameters
 subsection Solver parameters
   subsection Stokes solver parameters
-    set Number of cheap Stokes solver steps = 1000
-    set Linear solver tolerance = 1e-7
+    set Stokes solver type = block GMG
+    set Number of cheap Stokes solver steps = 2000
+    set Linear solver tolerance = 1e-5
+    set GMRES solver restart length = 140
+    set Use full A block as preconditioner = true 
   end
   subsection Newton solver parameters
-    set Maximum linear Stokes solver tolerance   = 1e-5
+    set Maximum linear Stokes solver tolerance   = 1e-2
     set Use Eisenstat Walker method for Picard iterations = true
+  end
+  subsection Advection solver parameters 
+    set GMRES solver restart length = 50
   end
 end
 
@@ -302,7 +308,7 @@ set List of postprocessors = basic statistics, composition statistics, heat flux
     set Maximum particles per cell  = 100
     set Load balancing strategy     = remove and add particles
     set List of particle properties = initial composition, viscoplastic strain invariants, pT path, position
-    set Interpolation scheme        = cell average
+    set Interpolation scheme        = quadratic least squares
     set Update ghost particles      = true
     set Particle generator name     = reference cell
     subsection Generator
