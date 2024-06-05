@@ -89,7 +89,7 @@ subsection Mesh deformation
   set Additional tangential mesh velocity boundary indicators = left, right
 
   subsection Fastscape
-    set Vertical exaggeration = -1
+    set Vertical exaggeration = 1
     set Maximum timestep length = 500
     set Number of fastscape timesteps per aspect timestep = 40
     set Maximum surface refinement level = 2    # Matches surface resolution
