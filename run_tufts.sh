@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -J fastscape_test
-#SBATCH --time=00-96:00:00
+#SBATCH --time=00-24:00:00
 #SBATCH -p vaseylab
 #SBATCH -N XXX
 #SBATCH -n XXX
