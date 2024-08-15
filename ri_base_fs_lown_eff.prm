@@ -308,7 +308,7 @@ set List of postprocessors = basic statistics, composition statistics, heat flux
     set Maximum particles per cell  = 100
     set Load balancing strategy     = remove and add particles
     set List of particle properties = initial composition, viscoplastic strain invariants, pT path, position
-    set Interpolation scheme        = quadratic least squares
+    set Interpolation scheme        = cell average
     set Update ghost particles      = true
     set Particle generator name     = reference cell
     subsection Generator
