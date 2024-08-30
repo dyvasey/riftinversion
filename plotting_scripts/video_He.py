@@ -57,7 +57,7 @@ for k,step in enumerate(tqdm(timesteps)):
 
     axs.set_title(str(round(time,1)) +' Ma',loc='left')
     
-    vp.plot2D(files[k],'AHe',bounds=[400,600,550,620],ax=axs,
+    vp.plot2D(files[k],'AHe',bounds=[300,700,550,620],ax=axs,
               cmap=cm,colorbar=bar,clim=clim)
 
     plt.tight_layout()
