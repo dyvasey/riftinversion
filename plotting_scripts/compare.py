@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 import pyvista as pv
 
-from riftinversion import vtk_plot as vp
+sys.path.append('/home/dyvasey/git/riftinversion/')
+import vtk_plot as vp
 
 pv.start_xvfb()
 
