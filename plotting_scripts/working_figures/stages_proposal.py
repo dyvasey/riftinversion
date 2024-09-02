@@ -30,7 +30,7 @@ tstep_interval = 0.1
 
 # Set up the figure
 
-fig,axs = plt.subplots(1,4,dpi=300,figsize=(7.5,3))
+fig,axs = plt.subplots(1,4,dpi=300,figsize=(6.5,3))
 bounds = [300,700,400,620]
 
 colors=['#66CCEE','#BBBBBB','#EE6677','#228833']
