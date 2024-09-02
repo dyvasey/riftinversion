@@ -1,0 +1,92 @@
+"""
+Example age and diffusion profile for NSF proposal
+"""
+import sys
+sys.path.append('/home/dyvasey/git/riftinversion/')
+
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+import pyvista as pv
+import pandas as pd
+import vtk_plot as vp
+from tchron import tchron as tc
+from matplotlib import rc
+rc("pdf", fonttype=42)
+
+U = 100
+Th = 100
+radius = 50
+time_interval = 1e5
+
+fig, axs = plt.subplots(2,1,figsize=(2,3),dpi=300)
+
+# Get particles from model
+glauc = '/home/vaseylab/glaucophane/'
+directory_He = os.path.join(glauc,'fastscape_testing/meshes_He_060524_rif')
+
+file = os.path.join(directory_He,'meshes_He_060524_rif_360.vtu')
+mesh = pv.read(file)
+ids = mesh['id']
+positions = mesh['position']
+position_df = pd.DataFrame(data=positions,index=ids)
+target = (position_df[0]>524e3) & (position_df[0]<526e3) & (position_df[1]>=600e3)
+particles = position_df[target]
+
+# Check for one that is in the first mesh
+initial_mesh = pv.read(os.path.join(directory_He,'meshes_He_060524_rif_0.vtu'))
+for p in particles.index:
+    if p in initial_mesh['id']:
+        print('Yes!',p)
+        particle = p
+        break
+    else:
+        print('Boo!',p)
+
+print(particle,position_df.loc[particle,:])
+
+# Extract T-t path for particle
+mesh_files = os.listdir(directory_He)
+ints = np.arange(0,len(mesh_files),1)
+files = [os.path.join(directory_He,'meshes_He_060524_rif_'+str(integer)+'.vtu') for integer in ints]
+meshes = pv.read(files)
+all_ids,all_temps,all_positions = vp.extract_temps_positions(meshes)
+
+times = np.arange(0,36+.1,0.1)
+temps = vp.get_tt_path(all_ids,all_temps,particle)
+
+rift_ids = all_ids[160]
+rift_positions = all_positions[160]
+rift_df = pd.DataFrame(data=rift_positions,index=rift_ids)
+rift_particle_position = rift_df.loc[particle,:]
+print('Rift Position',rift_particle_position)
+
+fig.suptitle('Python Forward Model',fontsize=8)
+
+axs[0].plot(times,temps-273)
+axs[0].grid(True)
+axs[0].set_xlim(0,36)
+axs[0].set_ylim(200,0)
+axs[0].set_xlabel('Time (Ma)',fontsize=6)
+axs[0].set_ylabel('Temperature (°C)',fontsize=6)
+axs[0].set_title('Time-Temperature History',fontsize=6)
+axs[0].set_xticks(np.arange(0,41,10))
+axs[0].set_yticks(np.arange(0,201,40))
+axs[0].tick_params(axis='both', which='major', labelsize=6)
+
+age_model,volumes,positions,x = tc.forward_model(U,Th,radius,temps,time_interval,system='AHe')
+
+axs[1].plot(positions,volumes)
+axs[1].grid(True)
+axs[1].set_xlabel('Radius (normalized)',fontsize=6)
+axs[1].set_ylabel('He Concentration\n (normalized)',fontsize=6)
+axs[1].set_title('He Profile',fontsize=6)
+axs[1].annotate('AHe Age: '+str(round(age_model,1))+' Ma',xy=(0.1,0.3),xycoords='axes fraction',
+                backgroundcolor='white',fontsize=7)
+axs[1].set_xticks(np.arange(0,1.01,0.2))
+axs[1].set_yticks(np.arange(0,1.01,0.2))
+axs[1].tick_params(axis='both', which='major', labelsize=6)
+
+plt.tight_layout()
+
+fig.savefig('sample_particle.pdf')
