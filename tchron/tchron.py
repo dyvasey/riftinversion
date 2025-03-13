@@ -6,7 +6,7 @@ import warnings
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
-from scipy.integrate import romb,romberg
+from scipy.integrate import romb
 from scipy.linalg import solve_banded
 from scipy.interpolate import griddata
 
